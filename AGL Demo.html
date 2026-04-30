@@ -1,0 +1,2671 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AGL · RecrutIA</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #F5F6FA; height: 100vh; overflow: hidden; }
+
+  :root {
+    --c-black: #000000;
+    --c-gray: #787878;
+    --c-gold: #F0B450;
+    --c-gold-light: #F0DC8C;
+    --c-cream: #F0F0C8;
+    --c-navy: #143C64;
+    --c-slate: #64788C;
+    --c-slate-light: #8CA0B4;
+    --c-silver: #DCDCDC;
+    --c-white: #FFFFFF;
+  }
+
+  /* Animations */
+  @keyframes scanLine { 0% { top: 0%; opacity: 1; } 100% { top: 100%; opacity: 0.3; } }
+  @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+  @keyframes ripple { 0% { transform: scale(0.8); opacity: 1; } 100% { transform: scale(2.5); opacity: 0; } }
+  @keyframes dataFlow { 0% { transform: translateY(0); opacity: 0; } 20% { opacity: 1; } 80% { opacity: 1; } 100% { transform: translateY(-60px); opacity: 0; } }
+  @keyframes revealField { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+  @keyframes glowPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(240,180,80,0); } 50% { box-shadow: 0 0 0 8px rgba(240,180,80,0.2); } }
+  @keyframes progressFill { from { width: 0%; } to { width: 100%; } }
+  @keyframes slideIn { from { opacity: 0; transform: translateX(-12px); } to { opacity: 1; transform: translateX(0); } }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+  @keyframes fillBar { from { width: 0; } to { width: var(--target-w); } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes countUp { from { opacity: 0; } to { opacity: 1; } }
+
+  .fade-in { animation: fadeIn 0.35s ease both; }
+  .slide-in { animation: slideIn 0.3s ease both; }
+
+  /* Layout */
+  .app { display: flex; height: 100vh; width: 100vw; overflow: hidden; }
+
+  /* Sidebar */
+  .sidebar {
+    width: 240px; flex-shrink: 0;
+    background: var(--c-navy);
+    display: flex; flex-direction: column;
+    padding: 0;
+    position: relative;
+    z-index: 10;
+  }
+  .sidebar-logo {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .sidebar-logo .logo-mark {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.15em;
+    color: var(--c-gold); text-transform: uppercase; margin-bottom: 2px;
+  }
+  .sidebar-logo .logo-product {
+    font-size: 18px; font-weight: 700; color: var(--c-white);
+    letter-spacing: -0.02em;
+  }
+  .sidebar-logo .logo-sub {
+    font-size: 11px; color: var(--c-slate-light); margin-top: 2px;
+  }
+
+  .sidebar-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
+  .nav-section-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+    color: var(--c-slate-light); text-transform: uppercase;
+    padding: 16px 20px 6px;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 20px;
+    color: rgba(255,255,255,0.65);
+    cursor: pointer; font-size: 13.5px; font-weight: 500;
+    border-left: 3px solid transparent;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .nav-item:hover { background: rgba(255,255,255,0.06); color: var(--c-white); }
+  .nav-item.active {
+    background: rgba(240,180,80,0.12);
+    color: var(--c-gold);
+    border-left-color: var(--c-gold);
+  }
+  .nav-item svg { flex-shrink: 0; }
+  .nav-badge {
+    margin-left: auto; background: var(--c-gold);
+    color: var(--c-navy); font-size: 10px; font-weight: 700;
+    padding: 2px 6px; border-radius: 20px;
+  }
+
+  .sidebar-job {
+    margin: 12px 16px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px; padding: 12px;
+  }
+  .sidebar-job .job-label { font-size: 10px; color: var(--c-slate-light); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
+  .sidebar-job .job-title { font-size: 12.5px; color: var(--c-white); font-weight: 600; line-height: 1.35; }
+  .sidebar-job .job-meta { font-size: 11px; color: var(--c-slate-light); margin-top: 3px; }
+
+  /* Main */
+  .main { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+  .topbar {
+    height: 56px; background: var(--c-white);
+    border-bottom: 1px solid var(--c-silver);
+    display: flex; align-items: center; padding: 0 28px;
+    gap: 16px; flex-shrink: 0;
+  }
+  .topbar-title { font-size: 15px; font-weight: 700; color: var(--c-black); flex: 1; letter-spacing: -0.02em; }
+  .topbar-sub { font-size: 12px; color: var(--c-gray); }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600;
+    cursor: pointer; border: none; transition: all 0.15s; user-select: none;
+  }
+  .btn-primary { background: var(--c-navy); color: var(--c-white); }
+  .btn-primary:hover { background: #1a4d7d; }
+  .btn-gold { background: var(--c-gold); color: var(--c-navy); }
+  .btn-gold:hover { background: #e8a83a; }
+  .btn-outline {
+    background: transparent; color: var(--c-navy);
+    border: 1.5px solid var(--c-silver); font-weight: 500;
+  }
+  .btn-outline:hover { border-color: var(--c-navy); background: var(--c-cream); }
+  .btn-sm { padding: 5px 12px; font-size: 12px; }
+  .btn-ghost { background: transparent; color: var(--c-gray); border: none; }
+  .btn-ghost:hover { color: var(--c-navy); background: var(--c-cream); }
+
+  /* Page content */
+  .page { flex: 1; overflow-y: auto; padding: 28px; background: #F5F6FA; }
+
+  /* Cards */
+  .card {
+    background: var(--c-white); border-radius: 10px;
+    border: 1px solid var(--c-silver);
+    padding: 20px;
+  }
+  .card-title { font-size: 13px; font-weight: 700; color: var(--c-black); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.06em; }
+
+  /* Stats row */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+  .stat-card {
+    background: var(--c-white); border-radius: 10px;
+    border: 1px solid var(--c-silver);
+    padding: 20px 22px;
+  }
+  .stat-label { font-size: 11px; color: var(--c-gray); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; margin-bottom: 8px; }
+  .stat-value { font-size: 32px; font-weight: 800; color: var(--c-navy); letter-spacing: -0.03em; line-height: 1; }
+  .stat-delta { font-size: 11.5px; color: var(--c-gray); margin-top: 4px; }
+  .stat-delta.up { color: #2a9d5c; }
+  .stat-source-dots { display: flex; gap: 4px; margin-top: 10px; }
+  .source-dot {
+    height: 4px; border-radius: 4px;
+    transition: width 0.3s;
+  }
+
+  /* Candidate list */
+  .cand-table { width: 100%; border-collapse: collapse; }
+  .cand-table th {
+    font-size: 10.5px; font-weight: 700; color: var(--c-gray);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    padding: 8px 14px; text-align: left;
+    border-bottom: 2px solid var(--c-silver);
+    white-space: nowrap;
+  }
+  .cand-table td { padding: 0; border-bottom: 1px solid var(--c-silver); }
+  .cand-row {
+    display: contents;
+  }
+  .cand-row-inner {
+    display: flex; align-items: center;
+    padding: 12px 14px; gap: 14px;
+    cursor: pointer; transition: background 0.12s;
+  }
+  .cand-row-inner:hover { background: var(--c-cream); }
+  .cand-row-inner.selected { background: rgba(20,60,100,0.06); }
+
+  .avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; flex-shrink: 0;
+    color: var(--c-white);
+  }
+
+  .score-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 44px; padding: 4px 10px; border-radius: 20px;
+    font-size: 12.5px; font-weight: 800; letter-spacing: -0.01em;
+  }
+  .score-high { background: #e6f6ef; color: #1a7a42; }
+  .score-med { background: #fff8e6; color: #a06010; }
+  .score-low { background: #fceaea; color: #b03030; }
+
+  .tag {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.03em;
+    background: var(--c-cream); color: var(--c-navy); border: 1px solid var(--c-gold-light);
+  }
+  .tag-source {
+    background: rgba(20,60,100,0.07); color: var(--c-slate); border: none;
+  }
+
+  /* Filter bar */
+  .filter-bar { display: flex; gap: 8px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+  .filter-chip {
+    padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
+    cursor: pointer; border: 1.5px solid var(--c-silver);
+    background: var(--c-white); color: var(--c-gray);
+    transition: all 0.15s; user-select: none;
+  }
+  .filter-chip:hover { border-color: var(--c-navy); color: var(--c-navy); }
+  .filter-chip.active { background: var(--c-navy); color: var(--c-white); border-color: var(--c-navy); }
+
+  /* CV Detail panel */
+  .detail-panel {
+    width: 380px; flex-shrink: 0;
+    background: var(--c-white);
+    border-left: 1px solid var(--c-silver);
+    overflow-y: auto;
+    animation: slideIn 0.25s ease;
+  }
+  .detail-header { padding: 20px; border-bottom: 1px solid var(--c-silver); }
+  .detail-section { padding: 16px 20px; border-bottom: 1px solid var(--c-silver); }
+  .detail-section-title { font-size: 10.5px; font-weight: 700; color: var(--c-gray); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; }
+
+  .skill-bar-wrap { margin-bottom: 8px; }
+  .skill-bar-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--c-black); margin-bottom: 3px; }
+  .skill-bar-track { height: 6px; background: var(--c-silver); border-radius: 4px; overflow: hidden; }
+  .skill-bar-fill {
+    height: 100%; border-radius: 4px; background: var(--c-navy);
+    animation: fillBar 0.8s ease-out both;
+    width: var(--target-w);
+  }
+
+  /* Ingestion page */
+  .source-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+  .source-card {
+    border: 2px dashed var(--c-silver); border-radius: 10px;
+    padding: 24px 20px; text-align: center;
+    cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden;
+  }
+  .source-card:hover { border-color: var(--c-navy); background: var(--c-cream); }
+  .source-card.active { border-style: solid; border-color: var(--c-gold); background: rgba(240,180,80,0.06); }
+  .source-icon { font-size: 28px; margin-bottom: 8px; }
+  .source-title { font-size: 13.5px; font-weight: 700; color: var(--c-navy); }
+  .source-desc { font-size: 11.5px; color: var(--c-gray); margin-top: 4px; }
+
+  /* Analysis animation */
+  .analysis-steps { display: flex; flex-direction: column; gap: 0; }
+  .analysis-step {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--c-silver);
+    animation: fadeIn 0.4s ease both;
+  }
+  .step-dot {
+    width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; margin-top: 1px;
+  }
+  .step-pending { background: var(--c-silver); color: var(--c-gray); }
+  .step-done { background: var(--c-navy); color: var(--c-white); }
+  .step-active {
+    background: var(--c-gold); color: var(--c-navy);
+    animation: pulse 1s infinite;
+  }
+  .step-title { font-size: 13.5px; font-weight: 600; color: var(--c-black); }
+  .step-detail { font-size: 12px; color: var(--c-gray); margin-top: 2px; line-height: 1.5; }
+
+  /* Matching radar-style */
+  .criteria-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .criteria-item { }
+  .criteria-name { font-size: 12px; color: var(--c-gray); margin-bottom: 4px; font-weight: 600; }
+  .criteria-bar-track { height: 8px; background: var(--c-silver); border-radius: 4px; overflow: hidden; }
+  .criteria-bar-fill { height: 100%; border-radius: 4px; animation: fillBar 1s ease-out both; width: var(--target-w); }
+
+  /* Response composer */
+  .response-tabs { display: flex; gap: 0; border-bottom: 2px solid var(--c-silver); margin-bottom: 20px; }
+  .response-tab {
+    padding: 10px 20px; font-size: 13px; font-weight: 600;
+    color: var(--c-gray); cursor: pointer; border-bottom: 2px solid transparent;
+    margin-bottom: -2px; transition: all 0.15s;
+  }
+  .response-tab.active { color: var(--c-navy); border-bottom-color: var(--c-navy); }
+
+  .response-template {
+    background: var(--c-cream); border-radius: 8px;
+    border: 1px solid var(--c-gold-light);
+    padding: 18px; font-size: 13px; line-height: 1.8;
+    color: var(--c-black); white-space: pre-line;
+  }
+  .response-var { background: var(--c-gold-light); border-radius: 3px; padding: 0 4px; font-weight: 700; }
+
+  /* Spinner */
+  .spinner {
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 2.5px solid var(--c-silver);
+    border-top-color: var(--c-navy);
+    animation: spin 0.7s linear infinite;
+  }
+
+  /* Notification dot */
+  .notif-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--c-gold); flex-shrink: 0;
+  }
+
+  /* LinkedIn badge */
+  .li-badge { background: #0A66C2; color: white; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 3px; letter-spacing: 0.03em; }
+  .jb-badge { background: #e8401c; color: white; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 3px; }
+  .sc-badge { background: var(--c-navy); color: white; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 3px; }
+
+  /* Empty state */
+  .empty { text-align: center; padding: 60px 20px; color: var(--c-gray); font-size: 14px; }
+
+  input[type="text"], select, textarea {
+    border: 1.5px solid var(--c-silver); border-radius: 6px;
+    padding: 8px 12px; font-size: 13px; color: var(--c-black);
+    background: var(--c-white); outline: none; font-family: inherit;
+    transition: border-color 0.15s;
+    width: 100%;
+  }
+  input[type="text"]:focus, select:focus, textarea:focus { border-color: var(--c-navy); }
+  textarea { resize: vertical; min-height: 120px; }
+
+  .search-input { max-width: 260px; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--c-silver); border-radius: 4px; }
+
+  /* Progress ring */
+  .progress-ring-text { font-size: 22px; font-weight: 800; fill: var(--c-navy); }
+  .progress-ring-sub { font-size: 10px; fill: var(--c-gray); }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--c-navy); color: var(--c-white);
+    padding: 12px 20px; border-radius: 8px;
+    font-size: 13px; font-weight: 500;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+    z-index: 1000; display: flex; align-items: center; gap: 10px;
+    animation: fadeIn 0.3s ease;
+  }
+  .toast-icon { color: var(--c-gold); font-size: 16px; }
+
+  /* LinkedIn integration panel */
+  .integration-card {
+    border: 1.5px solid var(--c-silver); border-radius: 10px; padding: 20px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .integration-logo { width: 44px; height: 44px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 20px; flex-shrink: 0; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+
+  .timeline-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--c-navy); flex-shrink: 0; margin-top: 4px;
+  }
+  .timeline-line { width: 2px; background: var(--c-silver); flex: 1; min-height: 20px; }
+  .timeline-entry { display: flex; gap: 12px; }
+  .timeline-spine { display: flex; flex-direction: column; align-items: center; }
+
+  /* Talent pool */
+  .pool-card {
+    border: 1.5px solid var(--c-silver); border-radius: 8px; padding: 14px;
+    transition: border-color 0.15s; cursor: pointer;
+  }
+  .pool-card:hover { border-color: var(--c-navy); }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+const { useState, useEffect, useRef } = React;
+
+// ── DATA ──────────────────────────────────────────────────────────────────────
+
+const JOB_OFFER = {
+  title: "Responsable Développement Commercial",
+  location: "Paris, France · Hybride",
+  contract: "CDI",
+  experience: "5–8 ans",
+  sector: "Energie / Services",
+  skills: ["Développement commercial", "Gestion de portefeuille clients", "Appels d'offres B2B", "CRM", "Management d'équipe"],
+  description: `Rattaché(e) à la Direction Commerciale, vous pilotez le développement du portefeuille clients sur la région Île-de-France. Vous gérez les cycles de vente complets, de la prospection à la signature, et animez une équipe de 3 commerciaux terrain.`,
+};
+
+const CANDIDATES = [
+  {
+    id: 1, name: "Sophie Marchand", initials: "SM", color: "#143C64",
+    score: 91, status: "Top profil",
+    source: "LinkedIn", sourceType: "li",
+    title: "Directrice Commerciale Régionale", experience: 8,
+    location: "Paris", email: "s.marchand@email.fr",
+    skills: ["Développement commercial", "Management d'équipe", "CRM Salesforce", "Appels d'offres B2B", "Gestion budgétaire"],
+    education: "Master Commerce International – ESCP Business School",
+    languages: ["Français (natif)", "Anglais (C1)", "Espagnol (B2)"],
+    received: "2026-04-28",
+    matchCriteria: { experience: 95, competences: 88, secteur: 82, formation: 90, localisation: 100 },
+    excerpt: "8 ans d'expérience en développement commercial B2B dans l'énergie. A géré un portefeuille de +120 clients grands comptes. Ancienne Directrice chez TotalEnergies.",
+    responded: false,
+  },
+  {
+    id: 10, name: "Aya Konaté", initials: "AK", color: "#c0392b",
+    score: 85, status: "Top profil",
+    source: "LinkedIn", sourceType: "li",
+    title: "Directrice Commerciale Afrique de l'Ouest", experience: 8,
+    location: "Abidjan, Côte d'Ivoire", email: "a.konate@email.ci",
+    skills: ["Développement commercial", "Management d'équipe", "Appels d'offres B2B", "CRM", "Marchés émergents"],
+    education: "Master Commerce International – Université Félix Houphouët-Boigny",
+    languages: ["Français (natif)", "Anglais (C1)", "Dioula (natif)", "Baoulé (B2)"],
+    received: "2026-04-29",
+    matchCriteria: { experience: 88, competences: 90, secteur: 92, formation: 82, localisation: 70 },
+    excerpt: "8 ans à la tête de la direction commerciale d'un groupe panafricain de services aux entreprises. A développé un portefeuille de +200 clients en Afrique subsaharienne.",
+    responded: false,
+  },
+  {
+    id: 11, name: "Seydou Traoré", initials: "ST", color: "#1a6b3c",
+    score: 78, status: "Pertinent",
+    source: "Educarrière", sourceType: "jb",
+    title: "Responsable Grands Comptes – Afrique", experience: 6,
+    location: "Dakar, Sénégal", email: "s.traore@email.sn",
+    skills: ["Grands comptes", "Négociation B2B", "Logistique", "CRM Salesforce", "Secteur énergie"],
+    education: "MBA Management – École Supérieure de Commerce de Dakar",
+    languages: ["Français (natif)", "Anglais (B2)", "Wolof (natif)", "Bambara (B1)"],
+    received: "2026-04-29",
+    matchCriteria: { experience: 75, competences: 80, secteur: 88, formation: 78, localisation: 65 },
+    excerpt: "6 ans en gestion de comptes stratégiques dans le secteur de l'énergie en Afrique de l'Ouest. Expérience sur les appels d'offres internationaux et les partenariats public-privé.",
+    responded: false,
+  },
+  {
+    id: 2, name: "Karim Benali", initials: "KB", color: "#64788C",
+    score: 84, status: "Très pertinent",
+    source: "Site carrière", sourceType: "sc",
+    title: "Responsable Grands Comptes", experience: 6,
+    location: "Boulogne-Billancourt", email: "k.benali@email.fr",
+    skills: ["Négociation B2B", "Appels d'offres", "CRM HubSpot", "Gestion d'équipe", "Reporting commercial"],
+    education: "École de Commerce de Paris – Spécialisation Ventes",
+    languages: ["Français (natif)", "Anglais (B2)"],
+    received: "2026-04-27",
+    matchCriteria: { experience: 80, competences: 85, secteur: 75, formation: 88, localisation: 95 },
+    excerpt: "Responsable Grands Comptes depuis 6 ans, spécialisé dans les services aux entreprises. A développé un portefeuille de 80 clients avec une croissance annuelle de +18%.",
+    responded: false,
+  },
+  {
+    id: 3, name: "Léa Fontaine", initials: "LF", color: "#F0B450",
+    score: 79, status: "Pertinent",
+    source: "LinkedIn", sourceType: "li",
+    title: "Business Developer Senior", experience: 5,
+    location: "Paris", email: "lea.fontaine@email.fr",
+    skills: ["Business development", "Prospection", "CRM", "Présentations clients", "Secteur BtoB"],
+    education: "Master Marketing & Ventes – Université Paris-Dauphine",
+    languages: ["Français (natif)", "Anglais (C2)"],
+    received: "2026-04-27",
+    matchCriteria: { experience: 70, competences: 82, secteur: 68, formation: 85, localisation: 100 },
+    excerpt: "5 ans en business development, principalement dans le domaine des services numériques. Souhaite évoluer vers un secteur industriel/énergie.",
+    responded: true,
+  },
+  {
+    id: 4, name: "Thomas Durand", initials: "TD", color: "#8CA0B4",
+    score: 72, status: "À évaluer",
+    source: "Educarrière", sourceType: "jb",
+    title: "Ingénieur Commercial", experience: 4,
+    location: "Versailles", email: "t.durand@email.fr",
+    skills: ["Ventes B2B", "Prospection terrain", "Technique industrielle", "CRM", "Appels d'offres"],
+    education: "École d'ingénieurs (INSA Lyon) + MBA Grenoble École de Management",
+    languages: ["Français (natif)", "Anglais (B1)", "Allemand (A2)"],
+    received: "2026-04-26",
+    matchCriteria: { experience: 60, competences: 75, secteur: 80, formation: 78, localisation: 85 },
+    excerpt: "4 ans comme Ingénieur Commercial dans l'industrie. Profil technique fort avec une bonne maîtrise des cycles de vente complexes.",
+    responded: false,
+  },
+  {
+    id: 5, name: "Amina Rousseau", initials: "AR", color: "#2a9d5c",
+    score: 65, status: "Potentiel",
+    source: "Site carrière", sourceType: "sc",
+    title: "Chargée de Développement Commercial", experience: 3,
+    location: "Paris", email: "a.rousseau@email.fr",
+    skills: ["Prospection", "CRM Salesforce", "Gestion clients", "Marketing B2B"],
+    education: "Licence Professionnelle Commerce – Paris Est",
+    languages: ["Français (natif)", "Anglais (B1)"],
+    received: "2026-04-25",
+    matchCriteria: { experience: 45, competences: 68, secteur: 55, formation: 65, localisation: 100 },
+    excerpt: "3 ans d'expérience dans une PME spécialisée en services RH. Profil junior mais motivé avec de bons résultats sur les objectifs de prospection.",
+    responded: true,
+  },
+  {
+    id: 6, name: "Nicolas Petit", initials: "NP", color: "#787878",
+    score: 41, status: "Non retenu",
+    source: "Educarrière", sourceType: "jb",
+    title: "Commercial Terrain", experience: 2,
+    location: "Lyon", email: "n.petit@email.fr",
+    skills: ["Vente B2C", "Démarchage", "Téléprospection"],
+    education: "BTS Négociation et Digitalisation de la Relation Client",
+    languages: ["Français (natif)"],
+    received: "2026-04-24",
+    matchCriteria: { experience: 25, competences: 40, secteur: 38, formation: 42, localisation: 30 },
+    excerpt: "2 ans d'expérience dans la vente B2C (téléphonie). Secteur et niveau d'expérience insuffisants au regard du poste.",
+    responded: true,
+  },
+  {
+    id: 7, name: "Isabelle Garnier", initials: "IG", color: "#5a3e8c",
+    score: 88, status: "Top profil",
+    source: "LinkedIn", sourceType: "li",
+    title: "Directrice des Ventes", experience: 9,
+    location: "Paris", email: "i.garnier@email.fr",
+    skills: ["Stratégie commerciale", "Key Account Management", "CRM Salesforce", "Management", "B2B"],
+    education: "MBA – HEC Paris",
+    languages: ["Français (natif)", "Anglais (C2)", "Portugais (B1)"],
+    received: "2026-04-29",
+    matchCriteria: { experience: 92, competences: 90, secteur: 85, formation: 95, localisation: 100 },
+    excerpt: "9 ans en direction commerciale dans les services aux entreprises. Expérience confirmée sur la gestion de portefeuilles grands comptes en Afrique et Europe.",
+    responded: false,
+  },
+  {
+    id: 8, name: "Moussa Diallo", initials: "MD", color: "#2c7a4b",
+    score: 76, status: "Pertinent",
+    source: "Educarrière", sourceType: "jb",
+    title: "Responsable Commercial Afrique de l'Ouest", experience: 7,
+    location: "Abidjan / Paris", email: "m.diallo@email.fr",
+    skills: ["Développement commercial", "Appels d'offres", "Logistique", "B2B", "Négociation"],
+    education: "Master Commerce International – Université de Cocody",
+    languages: ["Français (natif)", "Anglais (B2)", "Wolof (natif)"],
+    received: "2026-04-29",
+    matchCriteria: { experience: 78, competences: 80, secteur: 90, formation: 72, localisation: 70 },
+    excerpt: "7 ans d'expérience en développement commercial en Afrique de l'Ouest, secteur logistique et transport. Connaissance approfondie des marchés subsahariens.",
+    responded: false,
+  },
+  {
+    id: 9, name: "Céline Morin", initials: "CM", color: "#a0522d",
+    score: 69, status: "À évaluer",
+    source: "Site carrière", sourceType: "sc",
+    title: "Chargée d'affaires B2B", experience: 5,
+    location: "Lyon", email: "c.morin@email.fr",
+    skills: ["Gestion clients", "Prospection", "CRM HubSpot", "Reporting", "Secteur BtoB"],
+    education: "Licence AES – Université Lyon III",
+    languages: ["Français (natif)", "Anglais (B1)"],
+    received: "2026-04-28",
+    matchCriteria: { experience: 65, competences: 70, secteur: 60, formation: 65, localisation: 55 },
+    excerpt: "5 ans comme chargée d'affaires dans le secteur des services B2B en région Rhône-Alpes. Solide gestion de portefeuille clients PME.",
+    responded: false,
+  },
+];
+
+const RESPONSE_TEMPLATES = {
+  ack: `Madame, Monsieur <span class="response-var">[PRÉNOM NOM]</span>,
+
+Nous avons bien reçu votre candidature au poste de <span class="response-var">[INTITULÉ DU POSTE]</span> chez AGL et nous vous en remercions sincèrement.
+
+Votre dossier est en cours d'examen par notre équipe de recrutement. Nous reviendrons vers vous dans les prochains jours.
+
+Cordialement,
+L'équipe Recrutement AGL`,
+
+  positive: `Madame, Monsieur <span class="response-var">[PRÉNOM NOM]</span>,
+
+Suite à l'examen de votre candidature pour le poste de <span class="response-var">[INTITULÉ DU POSTE]</span>, nous avons le plaisir de vous informer que votre profil a retenu toute notre attention.
+
+Nous souhaiterions vous rencontrer dans le cadre d'un entretien. Seriez-vous disponible la semaine du <span class="response-var">[DATE]</span> ?
+
+Dans cette attente, nous restons à votre disposition.
+
+Cordialement,
+<span class="response-var">[NOM DU RECRUTEUR]</span>
+Direction des Ressources Humaines – AGL`,
+
+  negative: `Madame, Monsieur <span class="response-var">[PRÉNOM NOM]</span>,
+
+Nous vous remercions de l'intérêt que vous portez à AGL et du temps consacré à votre candidature pour le poste de <span class="response-var">[INTITULÉ DU POSTE]</span>.
+
+Après examen attentif de votre dossier, nous sommes au regret de vous informer que nous ne donnons pas suite à votre candidature. Votre profil ne correspond pas aux critères requis pour ce poste.
+
+Nous conservons vos coordonnées dans notre base de talents et reviendrons vers vous si une opportunité correspondant à votre profil se présente.
+
+Cordialement,
+L'équipe Recrutement AGL`,
+};
+
+// ── HELPERS ──────────────────────────────────────────────────────────────────
+
+function SourceBadge({ type }) {
+  if (type === 'li') return <span className="li-badge">LinkedIn</span>;
+  if (type === 'jb') return <span className="jb-badge">Indeed</span>;
+  return <span className="sc-badge">Site AGL</span>;
+}
+
+function ScoreBadge({ score }) {
+  const cls = score >= 80 ? 'score-high' : score >= 60 ? 'score-med' : 'score-low';
+  return <span className={`score-badge ${cls}`}>{score}<span style={{fontSize:'10px',fontWeight:500}}>/100</span></span>;
+}
+
+function CircleScore({ score }) {
+  const r = 42, circ = 2 * Math.PI * r;
+  const fill = (score / 100) * circ;
+  const color = score >= 80 ? '#1a7a42' : score >= 60 ? '#a06010' : '#b03030';
+  return (
+    <svg width="110" height="110" viewBox="0 0 110 110">
+      <circle cx="55" cy="55" r={r} fill="none" stroke="#DCDCDC" strokeWidth="8" />
+      <circle cx="55" cy="55" r={r} fill="none" stroke={color} strokeWidth="8"
+        strokeDasharray={`${fill} ${circ}`} strokeLinecap="round"
+        transform="rotate(-90 55 55)" style={{transition:'stroke-dasharray 1s ease'}} />
+      <text x="55" y="52" textAnchor="middle" className="progress-ring-text" style={{fill:'var(--c-navy)'}}>{score}</text>
+      <text x="55" y="66" textAnchor="middle" className="progress-ring-sub">/100</text>
+    </svg>
+  );
+}
+
+const USERS = [
+  { name: 'Marie-Claire Dupuis', role: 'Responsable RH', initials: 'MD', color: '#143C64', email: 'mc.dupuis@agl.com' },
+];
+
+function LoginPage({ onLogin }) {
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [error, setError] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
+
+  const handle = (e) => {
+    e.preventDefault();
+    if (!email || !password) { setError('Veuillez remplir tous les champs.'); return; }
+    setLoading(true); setError('');
+    setTimeout(() => {
+      setLoading(false);
+      onLogin({ name: email.split('@')[0].replace('.', ' ').replace(/\b\w/g, c => c.toUpperCase()), email, initials: email.slice(0,2).toUpperCase(), color: '#143C64', role: 'Responsable RH' });
+    }, 1200);
+  };
+
+  return (
+    <div style={{minHeight:'100vh',background:'var(--c-navy)',display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:0}}>
+      {/* Background pattern */}
+      <div style={{position:'absolute',inset:0,backgroundImage:'radial-gradient(circle at 20% 80%, rgba(240,180,80,0.08) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(100,120,140,0.15) 0%, transparent 50%)',pointerEvents:'none'}}></div>
+
+      <div style={{width:400,position:'relative',zIndex:1}}>
+        {/* Logo */}
+        <div style={{textAlign:'center',marginBottom:36}}>
+          <img src="uploads/AGL FINAL.png" alt="AGL" style={{width:180,marginBottom:16}} />
+          <div style={{fontSize:13,color:'rgba(255,255,255,0.5)',letterSpacing:'0.12em',textTransform:'uppercase'}}>Plateforme de recrutement</div>
+        </div>
+
+        {/* Card */}
+        <div style={{background:'white',borderRadius:14,padding:'36px 36px 32px',boxShadow:'0 24px 64px rgba(0,0,0,0.3)'}}>
+          <div style={{fontWeight:800,fontSize:20,color:'var(--c-navy)',marginBottom:4,letterSpacing:'-0.02em'}}>Connexion</div>
+          <div style={{fontSize:13,color:'var(--c-gray)',marginBottom:24}}>Accédez à votre espace recruteur</div>
+
+          <form onSubmit={handle} style={{display:'flex',flexDirection:'column',gap:14}}>
+            <div>
+              <label style={{fontSize:12,fontWeight:700,color:'var(--c-black)',textTransform:'uppercase',letterSpacing:'0.06em',display:'block',marginBottom:5}}>Adresse e-mail</label>
+              <input type="text" placeholder="prenom.nom@agl.com" value={email} onChange={e => setEmail(e.target.value)}
+                style={{width:'100%',padding:'10px 14px',border:'1.5px solid var(--c-silver)',borderRadius:7,fontSize:13,fontFamily:'inherit',outline:'none',color:'var(--c-black)',boxSizing:'border-box'}} />
+            </div>
+            <div>
+              <label style={{fontSize:12,fontWeight:700,color:'var(--c-black)',textTransform:'uppercase',letterSpacing:'0.06em',display:'block',marginBottom:5}}>Mot de passe</label>
+              <input type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)}
+                style={{width:'100%',padding:'10px 14px',border:'1.5px solid var(--c-silver)',borderRadius:7,fontSize:13,fontFamily:'inherit',outline:'none',color:'var(--c-black)',boxSizing:'border-box'}} />
+            </div>
+
+            {error && <div style={{fontSize:12,color:'#b03030',background:'#fceaea',padding:'8px 12px',borderRadius:6}}>{error}</div>}
+
+            <button type="submit" className="btn btn-primary" style={{width:'100%',justifyContent:'center',padding:'11px',fontSize:14,marginTop:4,background:'var(--c-navy)',position:'relative'}}>
+              {loading ? <div className="spinner" style={{width:16,height:16,borderTopColor:'white'}}></div> : 'Se connecter →'}
+            </button>
+          </form>
+
+          <div style={{textAlign:'center',marginTop:18,fontSize:12,color:'var(--c-gray)'}}>
+            Mot de passe oublié ? <span style={{color:'var(--c-navy)',fontWeight:600,cursor:'pointer'}}>Réinitialiser</span>
+          </div>
+        </div>
+
+        <div style={{textAlign:'center',marginTop:20,fontSize:11.5,color:'rgba(255,255,255,0.3)'}}>
+          Africa Global Logistics © 2026 · Tous droits réservés
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function UserMenu({ user, onLogout }) {
+  const [open, setOpen] = React.useState(false);
+  const ref = React.useRef(null);
+
+  React.useEffect(() => {
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  return (
+    <div ref={ref} style={{position:'relative'}}>
+      <div onClick={() => setOpen(o => !o)} style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer',padding:'4px 8px',borderRadius:8,transition:'background 0.15s',background: open ? 'var(--c-cream)' : 'transparent'}}
+        onMouseEnter={e => e.currentTarget.style.background='var(--c-cream)'}
+        onMouseLeave={e => !open && (e.currentTarget.style.background='transparent')}>
+        <div style={{textAlign:'right'}}>
+          <div style={{fontSize:13,fontWeight:700,color:'var(--c-black)'}}>{user.name}</div>
+          <div style={{fontSize:11,color:'var(--c-gray)'}}>{user.role}</div>
+        </div>
+        <div style={{width:34,height:34,background:user.color,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',color:'white',fontSize:12,fontWeight:700,flexShrink:0}}>{user.initials}</div>
+        <div style={{fontSize:10,color:'var(--c-gray)',marginLeft:-2}}>▾</div>
+      </div>
+
+      {open && (
+        <div className="fade-in" style={{position:'absolute',top:'calc(100% + 6px)',right:0,background:'white',border:'1px solid var(--c-silver)',borderRadius:10,boxShadow:'0 8px 32px rgba(0,0,0,0.12)',minWidth:200,zIndex:200,overflow:'hidden'}}>
+          <div style={{padding:'14px 16px',borderBottom:'1px solid var(--c-silver)',background:'var(--c-cream)'}}>
+            <div style={{fontWeight:700,fontSize:13,color:'var(--c-black)'}}>{user.name}</div>
+            <div style={{fontSize:11.5,color:'var(--c-gray)'}}>{user.email}</div>
+            <div style={{fontSize:11,color:'var(--c-slate)',marginTop:2}}>{user.role}</div>
+          </div>
+          {[
+            { icon:'👤', label:'Mon profil' },
+            { icon:'⚙️', label:'Paramètres' },
+            { icon:'🔔', label:'Notifications' },
+          ].map(item => (
+            <div key={item.label} onClick={() => setOpen(false)} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 16px',cursor:'pointer',fontSize:13,color:'var(--c-black)',transition:'background 0.12s'}}
+              onMouseEnter={e => e.currentTarget.style.background='var(--c-cream)'}
+              onMouseLeave={e => e.currentTarget.style.background='transparent'}>
+              <span style={{fontSize:15}}>{item.icon}</span>{item.label}
+            </div>
+          ))}
+          <div style={{borderTop:'1px solid var(--c-silver)'}}>
+            <div onClick={() => { setOpen(false); onLogout(); }} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 16px',cursor:'pointer',fontSize:13,color:'#b03030',transition:'background 0.12s'}}
+              onMouseEnter={e => e.currentTarget.style.background='#fceaea'}
+              onMouseLeave={e => e.currentTarget.style.background='transparent'}>
+              <span style={{fontSize:15}}>🚪</span>Déconnexion
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Sparkline({ data, color = '#143C64', height = 36 }) {
+  const canvasRef = useRef(null);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.offsetWidth || 120; canvas.width = w; canvas.height = height;
+    const max = Math.max(...data), min = Math.min(...data);
+    const range = max - min || 1;
+    const pts = data.map((v, i) => ({ x: (i / (data.length - 1)) * w, y: height - ((v - min) / range) * (height - 6) - 3 }));
+    ctx.beginPath();
+    pts.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+    ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.lineJoin = 'round'; ctx.stroke();
+    // Fill
+    ctx.lineTo(pts[pts.length-1].x, height); ctx.lineTo(pts[0].x, height); ctx.closePath();
+    ctx.fillStyle = color + '22'; ctx.fill();
+  }, []);
+  return <canvas ref={canvasRef} style={{width:'100%', height, display:'block'}}></canvas>;
+}
+
+function BigTrendChart() {
+  const canvasRef = useRef(null);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!canvasRef.current) return;
+      const ctx = canvasRef.current.getContext('2d');
+      const gradient = ctx.createLinearGradient(0, 0, 0, 240);
+      gradient.addColorStop(0, 'rgba(20,60,100,0.25)');
+      gradient.addColorStop(1, 'rgba(20,60,100,0.0)');
+      const gradient2 = ctx.createLinearGradient(0, 0, 0, 240);
+      gradient2.addColorStop(0, 'rgba(240,180,80,0.3)');
+      gradient2.addColorStop(1, 'rgba(240,180,80,0.0)');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['21/04','22/04','23/04','24/04','25/04','26/04','27/04','28/04','29/04'],
+          datasets: [
+            { label: 'Candidatures reçues', data: [3,5,7,5,10,5,9,7,6], borderColor: '#143C64', backgroundColor: gradient, fill: true, tension: 0.45, pointBackgroundColor: '#143C64', pointRadius: 5, pointHoverRadius: 7, borderWidth: 2.5 },
+            { label: 'CV analysés', data: [3,5,7,5,10,5,9,7,6], borderColor: '#F0B450', backgroundColor: gradient2, fill: false, tension: 0.45, pointBackgroundColor: '#F0B450', pointRadius: 4, pointHoverRadius: 6, borderWidth: 2, borderDash: [6,3] },
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { position: 'top', align: 'end', labels: { font: { size: 12, weight: '600' }, usePointStyle: true, padding: 16, color: '#000' } },
+            tooltip: {
+              backgroundColor: '#143C64', titleColor: '#F0DC8C', bodyColor: 'white',
+              padding: 12, cornerRadius: 8, displayColors: false,
+              callbacks: { label: ctx => ` ${ctx.parsed.y} ${ctx.dataset.label.toLowerCase()}` }
+            }
+          },
+          scales: {
+            x: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#787878' }, border: { display: false } },
+            y: { grid: { color: '#F0F0C8', lineWidth: 1 }, ticks: { stepSize: 2, font: { size: 11 }, color: '#787878' }, border: { display: false }, beginAtZero: true }
+          },
+          animation: { duration: 1200, easing: 'easeInOutQuart' }
+        }
+      });
+    }, 80);
+    return () => clearTimeout(timer);
+  }, []);
+  return <canvas ref={canvasRef} style={{width:'100%', height:'100%'}}></canvas>;
+}
+
+function SourceDonut() {
+  const canvasRef = useRef(null);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!canvasRef.current) return;
+      const ctx = canvasRef.current.getContext('2d');
+      new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['LinkedIn', 'Site AGL', 'Indeed', 'Educarrière'],
+          datasets: [{ data: [24, 13, 7, 3], backgroundColor: ['#0A66C2','#143C64','#e8401c','#2c7a4b'], borderWidth: 0, hoverOffset: 8 }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false, cutout: '70%',
+          plugins: {
+            legend: { position: 'right', labels: { font: { size: 12, weight: '600' }, usePointStyle: true, padding: 12, color: '#000', generateLabels: chart => {
+              const data = chart.data;
+              return data.labels.map((label, i) => ({
+                text: `${label}  ${data.datasets[0].data[i]}`,
+                fillStyle: data.datasets[0].backgroundColor[i],
+                strokeStyle: 'transparent', pointStyle: 'circle', index: i
+              }));
+            }}},
+            tooltip: { callbacks: { label: ctx => ` ${ctx.parsed} CV (${Math.round(ctx.parsed/47*100)}%)` } }
+          },
+          animation: { animateRotate: true, duration: 1000 }
+        },
+        plugins: [{
+          id: 'center', afterDraw(chart) {
+            const { ctx, chartArea: { left, right, top, bottom } } = chart;
+            const cx = (left + right) / 2, cy = (top + bottom) / 2;
+            ctx.save();
+            ctx.font = 'bold 28px Segoe UI, sans-serif'; ctx.fillStyle = '#143C64';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText('47', cx, cy - 10);
+            ctx.font = '11px Segoe UI, sans-serif'; ctx.fillStyle = '#787878';
+            ctx.fillText('candidatures', cx, cy + 12);
+            ctx.restore();
+          }
+        }]
+      });
+    }, 80);
+    return () => clearTimeout(timer);
+  }, []);
+  return <canvas ref={canvasRef} style={{width:'100%', height:'100%'}}></canvas>;
+}
+
+function ScoreRadar() {
+  const canvasRef = useRef(null);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!canvasRef.current) return;
+      const ctx = canvasRef.current.getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['<40','40-49','50-59','60-69','70-79','80-89','90-100'],
+          datasets: [{
+            data: [3,7,10,8,11,5,3],
+            backgroundColor: ctx => {
+              const v = ctx.raw;
+              const idx = ctx.dataIndex;
+              if (idx >= 5) return '#1a7a42';
+              if (idx >= 3) return '#F0B450';
+              return '#e8401c';
+            },
+            borderRadius: 8, borderSkipped: false,
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.y} candidat${ctx.parsed.y > 1 ? 's' : ''}`, title: ctx => `Score ${ctx[0].label}` } }
+          },
+          scales: {
+            x: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#787878' }, border: { display: false } },
+            y: { grid: { color: '#F0F0C8' }, ticks: { stepSize: 3, font: { size: 11 }, color: '#787878' }, border: { display: false }, beginAtZero: true }
+          },
+          animation: { duration: 1000, easing: 'easeOutBounce' }
+        }
+      });
+    }, 80);
+    return () => clearTimeout(timer);
+  }, []);
+  return <canvas ref={canvasRef} style={{width:'100%', height:'100%'}}></canvas>;
+}
+
+function PipelineBar() {
+  const stages = [
+    { label: 'Reçus', value: 47, color: '#8CA0B4' },
+    { label: 'Analysés', value: 47, color: '#64788C' },
+    { label: 'Scorés', value: 47, color: '#143C64' },
+    { label: 'Shortlist', value: 8, color: '#F0B450' },
+    { label: 'Entretien', value: 4, color: '#F0DC8C' },
+    { label: 'Offre', value: 1, color: '#1a7a42' },
+  ];
+  const max = 47;
+  return (
+    <div style={{display:'flex',flexDirection:'column',gap:10,padding:'4px 0'}}>
+      {stages.map((s, i) => (
+        <div key={s.label} style={{display:'flex',alignItems:'center',gap:12}}>
+          <div style={{width:72,fontSize:12,fontWeight:700,color:'var(--c-gray)',textAlign:'right',flexShrink:0}}>{s.label}</div>
+          <div style={{flex:1,height:28,background:'var(--c-cream)',borderRadius:6,overflow:'hidden',position:'relative'}}>
+            <div style={{height:'100%',background:s.color,borderRadius:6,width:`${(s.value/max)*100}%`,transition:'width 1s ease',display:'flex',alignItems:'center',paddingLeft:10}}>
+              <span style={{color: i < 2 ? 'white' : (i === 5 ? 'white' : '#143C64'), fontWeight:800,fontSize:13}}>{s.value}</span>
+            </div>
+          </div>
+          <div style={{width:36,fontSize:11,color:'var(--c-gray)',flexShrink:0,textAlign:'right'}}>{Math.round(s.value/max*100)}%</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function Dashboard({ onNavigate }) {
+  const [tick, setTick] = useState(0);
+  useEffect(() => { const t = setTimeout(() => setTick(1), 200); return () => clearTimeout(t); }, []);
+
+  const KPI = [
+    { label: 'Candidatures', value: 47, delta: '+12 vs sem. préc.', up: true, color: '#143C64', sparkData: [28,31,30,33,35,37,42,47], icon: '📥' },
+    { label: 'Taux d\'analyse', value: '100%', delta: 'Traitement IA complet', up: true, color: '#1a7a42', sparkData: [72,80,85,88,92,95,98,100], icon: '🤖' },
+    { label: 'Score moyen', value: 71, delta: '+4 pts ce mois', up: true, color: '#F0B450', sparkData: [60,62,65,64,67,68,70,71], icon: '⭐' },
+    { label: 'Shortlist', value: 8, delta: '17% des candidats', up: false, color: '#64788C', sparkData: [2,3,3,5,5,6,7,8], icon: '🎯' },
+  ];
+
+  return (
+    <div className="page fade-in" style={{background:'#F5F6FA'}}>
+
+      {/* KPI row */}
+      <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:14,marginBottom:20}}>
+        {KPI.map((k, i) => (
+          <div key={i} style={{background:'white',borderRadius:12,padding:'18px 20px',boxShadow:'0 1px 4px rgba(0,0,0,0.06)',border:'1px solid #eee',animationDelay:`${i*0.08}s`,overflow:'hidden',position:'relative'}}>
+            <div style={{position:'absolute',top:0,right:0,width:80,height:80,background:k.color,opacity:0.06,borderRadius:'0 12px 0 80px'}}></div>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:8}}>
+              <div style={{fontSize:11,fontWeight:700,color:'#787878',textTransform:'uppercase',letterSpacing:'0.08em'}}>{k.label}</div>
+              <div style={{fontSize:18}}>{k.icon}</div>
+            </div>
+            <div style={{fontSize:34,fontWeight:900,color:k.color,letterSpacing:'-0.03em',lineHeight:1,marginBottom:4}}>{k.value}</div>
+            <div style={{fontSize:11.5,color: k.up ? '#1a7a42' : '#787878',fontWeight:600,marginBottom:10}}>{k.up ? '↑ ' : ''}{k.delta}</div>
+            <Sparkline data={k.sparkData} color={k.color} height={32} />
+          </div>
+        ))}
+      </div>
+
+      {/* Main charts row */}
+      <div style={{display:'grid',gridTemplateColumns:'2fr 1fr',gap:16,marginBottom:16}}>
+        <div style={{background:'white',borderRadius:12,padding:'20px',boxShadow:'0 1px 4px rgba(0,0,0,0.06)',border:'1px solid #eee'}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
+            <div>
+              <div style={{fontWeight:800,fontSize:14,color:'#000',letterSpacing:'-0.01em'}}>Flux de candidatures</div>
+              <div style={{fontSize:12,color:'#787878',marginTop:2}}>Réceptions quotidiennes · 9 derniers jours</div>
+            </div>
+            <div style={{fontSize:11,background:'#e6f6ef',color:'#1a7a42',fontWeight:700,padding:'4px 10px',borderRadius:20}}>↑ +34% vs mois dernier</div>
+          </div>
+          <div style={{height:220,position:'relative'}}><BigTrendChart /></div>
+        </div>
+
+        <div style={{background:'white',borderRadius:12,padding:'20px',boxShadow:'0 1px 4px rgba(0,0,0,0.06)',border:'1px solid #eee'}}>
+          <div style={{fontWeight:800,fontSize:14,color:'#000',marginBottom:4}}>Sources</div>
+          <div style={{fontSize:12,color:'#787878',marginBottom:14}}>Répartition par canal</div>
+          <div style={{height:200,position:'relative'}}><SourceDonut /></div>
+        </div>
+      </div>
+
+      {/* Bottom row */}
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16,marginBottom:16}}>
+        <div style={{background:'white',borderRadius:12,padding:'20px',boxShadow:'0 1px 4px rgba(0,0,0,0.06)',border:'1px solid #eee'}}>
+          <div style={{fontWeight:800,fontSize:14,color:'#000',marginBottom:4}}>Distribution des scores IA</div>
+          <div style={{fontSize:12,color:'#787878',marginBottom:14}}>Répartition par tranche · 47 CV analysés</div>
+          <div style={{display:'flex',gap:10,marginBottom:12}}>
+            {[{l:'Excellent',c:'#1a7a42',bg:'#e6f6ef',n:8},{l:'Moyen',c:'#a06010',bg:'#fff8e6',n:19},{l:'Faible',c:'#b03030',bg:'#fceaea',n:20}].map(b => (
+              <div key={b.l} style={{flex:1,background:b.bg,borderRadius:8,padding:'8px 10px',textAlign:'center'}}>
+                <div style={{fontSize:20,fontWeight:900,color:b.c}}>{b.n}</div>
+                <div style={{fontSize:10.5,color:b.c,fontWeight:700}}>{b.l}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{height:140,position:'relative'}}><ScoreRadar /></div>
+        </div>
+
+        <div style={{background:'white',borderRadius:12,padding:'20px',boxShadow:'0 1px 4px rgba(0,0,0,0.06)',border:'1px solid #eee'}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:4}}>
+            <div style={{fontWeight:800,fontSize:14,color:'#000'}}>Entonnoir de recrutement</div>
+          </div>
+          <div style={{fontSize:12,color:'#787878',marginBottom:16}}>De la réception à l'offre</div>
+          <PipelineBar />
+        </div>
+      </div>
+
+      {/* Top candidates */}
+      <div style={{background:'white',borderRadius:12,padding:'20px',boxShadow:'0 1px 4px rgba(0,0,0,0.06)',border:'1px solid #eee'}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
+          <div>
+            <div style={{fontWeight:800,fontSize:14,color:'#000'}}>Top candidats · Shortlist</div>
+            <div style={{fontSize:12,color:'#787878',marginTop:2}}>Profils avec score ≥ 80</div>
+          </div>
+          <button className="btn btn-outline btn-sm" onClick={() => onNavigate('candidates')}>Voir tous →</button>
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12}}>
+          {CANDIDATES.filter(c => c.score >= 80).map((c,i) => (
+            <div key={c.id} onClick={() => onNavigate('candidates')} style={{border:'1.5px solid var(--c-silver)',borderRadius:10,padding:'14px',cursor:'pointer',transition:'all 0.15s',position:'relative',overflow:'hidden'}}
+              onMouseEnter={e => { e.currentTarget.style.borderColor='var(--c-navy)'; e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow='0 4px 16px rgba(0,0,0,0.08)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor='var(--c-silver)'; e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=''; }}>
+              <div style={{position:'absolute',top:0,right:0,width:50,height:50,background:c.color,opacity:0.08,borderRadius:'0 10px 0 50px'}}></div>
+              <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
+                <div className="avatar" style={{background:c.color,width:36,height:36,fontSize:13}}>{c.initials}</div>
+                <div>
+                  <div style={{fontWeight:700,fontSize:13,color:'var(--c-black)'}}>{c.name}</div>
+                  <SourceBadge type={c.sourceType} />
+                </div>
+              </div>
+              <div style={{fontSize:11.5,color:'var(--c-gray)',marginBottom:10,lineHeight:1.4}}>{c.title}</div>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                <span style={{fontSize:11,color:'var(--c-gray)'}}>{c.experience} ans</span>
+                <ScoreBadge score={c.score} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CandidatesPage({ candidates, tweaks, addToPool, talentPool, activeOffer, onClearOffer }) {
+  const [selected, setSelected] = useState(CANDIDATES[0]);
+  const [filter, setFilter] = useState('all');
+  const [search, setSearch] = useState('');
+  const [viewModal, setViewModal] = useState(null);
+  const [responseModal, setResponseModal] = useState(null);
+  const [toast, setToast] = useState(null);
+
+  const showToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const filters = [
+    { id: 'all', label: 'Tous (47)' },
+    { id: 'top', label: 'Top profils' },
+    { id: 'li', label: 'LinkedIn' },
+    { id: 'sc', label: 'Site carrière' },
+    { id: 'jb', label: 'Indeed' },
+  ];
+
+  const [page, setPage] = useState(1);
+  const PER_PAGE = 7;
+
+  const filtered = candidates.filter(c => {
+    if (filter === 'top' && c.score < 80) return false;
+    if (filter === 'li' && c.sourceType !== 'li') return false;
+    if (filter === 'sc' && c.sourceType !== 'sc') return false;
+    if (filter === 'jb' && c.sourceType !== 'jb') return false;
+    if (search && !c.name.toLowerCase().includes(search.toLowerCase()) &&
+        !c.title.toLowerCase().includes(search.toLowerCase())) return false;
+    return true;
+  });
+
+  const totalPages = Math.ceil(filtered.length / PER_PAGE);
+  const visible = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+
+  // Reset to page 1 when filter/search changes
+  React.useEffect(() => { setPage(1); }, [filter, search]);
+
+  return (
+    <div style={{display:'flex',flex:1,overflow:'hidden',height:'100%'}}>
+      <div style={{flex:1,overflow:'hidden',display:'flex',flexDirection:'column'}}>
+        <div style={{flex:1,overflowY:'auto',padding:'28px'}}>
+          {activeOffer && (
+            <div className="fade-in" style={{display:'flex',alignItems:'center',gap:10,padding:'10px 16px',background:'rgba(20,60,100,0.07)',borderRadius:8,border:'1.5px solid var(--c-navy)',marginBottom:14}}>
+              <span style={{fontSize:13,fontWeight:700,color:'var(--c-navy)'}}>🎯 Filtre actif : {activeOffer.title}</span>
+              <button className="btn btn-ghost btn-sm" style={{marginLeft:'auto',fontSize:11}} onClick={onClearOffer}>✕ Voir tous</button>
+            </div>
+          )} 
+          <div className="filter-bar">
+            {filters.map(f => (
+              <div key={f.id} className={`filter-chip ${filter===f.id?'active':''}`}
+                onClick={() => setFilter(f.id)}>{f.label}</div>
+            ))}
+            <div style={{flex:1}}></div>
+            <input className="search-input" type="text" placeholder="Rechercher un candidat…"
+              value={search} onChange={e => setSearch(e.target.value)} />
+          </div>
+          <div className="card" style={{padding:0, minHeight:520}}>
+            <div style={{display:'grid',gridTemplateColumns:'2fr 1.2fr 1fr 80px 90px 100px',gap:0}}>
+              {['Candidat','Poste actuel','Source','Exp.','Score','Actions'].map(h => (
+                <div key={h} style={{padding:'10px 14px',fontSize:'10.5px',fontWeight:700,color:'var(--c-gray)',textTransform:'uppercase',letterSpacing:'0.08em',borderBottom:'2px solid var(--c-silver)'}}>{h}</div>
+              ))}
+            </div>
+            {visible.map((c,i) => (
+              <div key={c.id} onClick={() => setSelected(c)}
+                style={{display:'grid',gridTemplateColumns:'2fr 1.2fr 1fr 80px 90px 100px',borderBottom:'1px solid var(--c-silver)',cursor:'pointer',background: selected?.id===c.id ? 'rgba(20,60,100,0.05)' : 'transparent',transition:'background 0.12s'}}
+                className="hover-row">
+                <div style={{padding:'12px 14px',display:'flex',alignItems:'center',gap:10}}>
+                  <div className="avatar" style={{background:c.color,width:32,height:32,fontSize:12}}>{c.initials}</div>
+                  <div>
+                    <div style={{fontWeight:700,fontSize:13.5,color:'var(--c-black)'}}>{c.name}</div>
+                    <div style={{fontSize:11.5,color:'var(--c-gray)'}}>{c.location}</div>
+                  </div>
+                </div>
+                <div style={{padding:'12px 14px',display:'flex',alignItems:'center',fontSize:13,color:'var(--c-black)'}}>{c.title}</div>
+                <div style={{padding:'12px 14px',display:'flex',alignItems:'center'}}><SourceBadge type={c.sourceType} /></div>
+                <div style={{padding:'12px 14px',display:'flex',alignItems:'center',fontSize:13,color:'var(--c-gray)'}}>{c.experience} ans</div>
+                <div style={{padding:'12px 14px',display:'flex',alignItems:'center'}}><ScoreBadge score={c.score} /></div>
+                <div style={{padding:'12px 14px',display:'flex',alignItems:'center',gap:6}}>
+                  {c.responded
+                    ? <button className="btn btn-ghost btn-sm" style={{color:'var(--c-slate)',fontSize:11,textDecoration:'underline',padding:'4px 6px'}} onClick={e => { e.stopPropagation(); setViewModal(c); }}>Voir réponse</button>
+                    : <button className="btn btn-gold btn-sm" onClick={e => { e.stopPropagation(); setResponseModal(c); }}>Répondre</button>
+                  }
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Pagination */}
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'14px 16px',borderTop:'1px solid var(--c-silver)',background:'var(--c-white)'}}>
+            <div style={{fontSize:12.5,color:'var(--c-gray)'}}>
+              {filtered.length} candidat{filtered.length > 1 ? 's' : ''} · page <strong>{page}</strong> sur <strong>{totalPages}</strong>
+            </div>
+            <div style={{display:'flex',gap:4,alignItems:'center'}}>
+              <button className="btn btn-outline btn-sm" onClick={() => setPage(p => Math.max(1, p-1))} disabled={page === 1}
+                style={{opacity: page===1 ? 0.4 : 1, minWidth:32}}>←</button>
+              {Array.from({length: totalPages}, (_,i) => i+1).map(n => (
+                <button key={n} className="btn btn-sm"
+                  onClick={() => setPage(n)}
+                  style={{minWidth:32, background: n===page ? 'var(--c-navy)' : 'transparent', color: n===page ? 'white' : 'var(--c-gray)', border: n===page ? 'none' : '1.5px solid var(--c-silver)'}}>
+                  {n}
+                </button>
+              ))}
+              <button className="btn btn-outline btn-sm" onClick={() => setPage(p => Math.min(totalPages, p+1))} disabled={page === totalPages}
+                style={{opacity: page===totalPages ? 0.4 : 1, minWidth:32}}>→</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {selected && (
+        <div className="detail-panel">
+          <div className="detail-header">
+            <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:14}}>
+              <div className="avatar" style={{background:selected.color,width:48,height:48,fontSize:17}}>{selected.initials}</div>
+              <div>
+                <div style={{fontWeight:800,fontSize:16,color:'var(--c-black)',letterSpacing:'-0.02em'}}>{selected.name}</div>
+                <div style={{fontSize:12.5,color:'var(--c-gray)'}}>{selected.title}</div>
+              </div>
+              <div style={{marginLeft:'auto'}}><CircleScore score={selected.score} /></div>
+            </div>
+            <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+              <SourceBadge type={selected.sourceType} />
+              <span className="tag-source tag">{selected.experience} ans exp.</span>
+              <span className="tag-source tag">{selected.location}</span>
+            </div>
+          </div>
+
+          <div className="detail-section">
+            <div className="detail-section-title">Résumé automatique</div>
+            <div style={{fontSize:12.5,color:'var(--c-black)',lineHeight:1.65,background:'var(--c-cream)',borderRadius:6,padding:'10px 12px',borderLeft:'3px solid var(--c-gold)'}}>{selected.excerpt}</div>
+          </div>
+
+          <div className="detail-section">
+            <div className="detail-section-title">Matching par critère</div>
+            <div style={{display:'flex',flexDirection:'column',gap:8}}>
+              {Object.entries(selected.matchCriteria).map(([k,v]) => {
+                const labels = {experience:'Expérience',competences:'Compétences',secteur:'Secteur',formation:'Formation',localisation:'Localisation'};
+                const col = v >= 80 ? '#1a7a42' : v >= 60 ? '#a06010' : '#b03030';
+                return (
+                  <div key={k} className="skill-bar-wrap">
+                    <div className="skill-bar-label">
+                      <span>{labels[k]}</span>
+                      <span style={{fontWeight:700,color:col}}>{v}%</span>
+                    </div>
+                    <div className="skill-bar-track">
+                      <div className="skill-bar-fill" style={{'--target-w':`${v}%`, background:col}}></div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="detail-section">
+            <div className="detail-section-title">Compétences identifiées</div>
+            <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+              {selected.skills.map(s => <span key={s} className="tag">{s}</span>)}
+            </div>
+          </div>
+
+          <div className="detail-section">
+            <div className="detail-section-title">Formation</div>
+            <div style={{fontSize:12.5,color:'var(--c-black)'}}>{selected.education}</div>
+          </div>
+
+          <div className="detail-section">
+            <div className="detail-section-title">Langues</div>
+            <div style={{display:'flex',flexDirection:'column',gap:4}}>
+              {selected.languages.map(l => <div key={l} style={{fontSize:12.5,color:'var(--c-black)'}}>· {l}</div>)}
+            </div>
+          </div>
+
+          <div className="detail-section" style={{border:'none'}}>
+            <div style={{display:'flex',flexDirection:'column',gap:8}}>
+              <button className="btn btn-primary" style={{width:'100%',justifyContent:'center'}} onClick={() => setResponseModal(selected)}>
+                ✉ Envoyer une réponse
+              </button>
+              {talentPool.find(c => c.id === selected.id)
+                ? <button className="btn btn-outline" style={{width:'100%',justifyContent:'center',color:'#1a7a42',borderColor:'#b8e8cc',background:'#e6f6ef'}} disabled>
+                    ✓ Dans la base de talents
+                  </button>
+                : <button className="btn btn-outline" style={{width:'100%',justifyContent:'center'}} onClick={() => { addToPool(selected); showToast(`${selected.name} ajouté(e) à la base de talents`); }}>
+                    ＋ Ajouter à la base de talents
+                  </button>
+              }
+            </div>
+          </div>
+        </div>
+      )}
+
+      {viewModal && (
+        <ViewResponseModal cand={viewModal} onClose={() => setViewModal(null)} />
+      )}
+
+      {responseModal && (
+        <ResponseModal cand={responseModal}
+          onClose={() => setResponseModal(null)}
+          onSend={(msg) => { setResponseModal(null); showToast(`✓ Réponse envoyée à ${responseModal.name}`); }} />
+      )}
+
+      {toast && <div className="toast"><span className="toast-icon">✓</span>{toast}</div>}
+    </div>
+  );
+}
+
+function ViewResponseModal({ cand, onClose }) {
+  // Determine which template was likely sent based on score
+  const templateKey = cand.score >= 80 ? 'positive' : cand.score < 50 ? 'negative' : 'ack';
+  const typeLabel = { positive: 'Réponse positive', negative: 'Réponse négative', ack: 'Accusé de réception' };
+  const typeColor = { positive: '#1a7a42', negative: '#b03030', ack: '#a06010' };
+  const typeBg = { positive: '#e6f6ef', negative: '#fceaea', ack: '#fff8e6' };
+
+  // Personalize template
+  const personalized = RESPONSE_TEMPLATES[templateKey]
+    .replace('[PRÉNOM NOM]', cand.name)
+    .replace('[INTITULÉ DU POSTE]', JOB_OFFER.title)
+    .replace('[DATE]', '12 mai 2026')
+    .replace('[NOM DU RECRUTEUR]', 'Marie-Claire Dupuis');
+
+  return (
+    <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.45)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:500}}>
+      <div className="card fade-in" style={{width:560,maxHeight:'80vh',overflowY:'auto',borderRadius:12,boxShadow:'0 8px 40px rgba(0,0,0,0.18)'}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
+          <div style={{fontWeight:800,fontSize:16,color:'var(--c-navy)'}}>Message envoyé</div>
+          <button className="btn btn-ghost btn-sm" onClick={onClose}>✕</button>
+        </div>
+
+        <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:16,padding:'10px 14px',background:'var(--c-cream)',borderRadius:8,border:'1px solid var(--c-gold-light)'}}>
+          <div className="avatar" style={{background:cand.color,width:32,height:32,fontSize:12}}>{cand.initials}</div>
+          <div style={{flex:1}}>
+            <div style={{fontWeight:700,fontSize:13,color:'var(--c-black)'}}>{cand.name}</div>
+            <div style={{fontSize:11.5,color:'var(--c-gray)'}}>{cand.email}</div>
+          </div>
+          <span style={{fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:20,background:typeBg[templateKey],color:typeColor[templateKey]}}>
+            {typeLabel[templateKey]}
+          </span>
+        </div>
+
+        <div style={{fontSize:11,color:'var(--c-gray)',marginBottom:8,display:'flex',gap:16}}>
+          <span>📅 Envoyé le 28/04/2026 à 11h03</span>
+          <span>✓ Délivré</span>
+        </div>
+
+        <div className="response-template" dangerouslySetInnerHTML={{__html: personalized.replace(/\[.*?\]/g, m => `<span class="response-var">${m}</span>`)}}></div>
+
+        <div style={{display:'flex',justifyContent:'flex-end',marginTop:16}}>
+          <button className="btn btn-outline" onClick={onClose}>Fermer</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ResponseModal({ cand, onClose, onSend }) {
+  const [tab, setTab] = useState('ack');
+  const tabs = [
+    { id: 'ack', label: 'Accusé de réception' },
+    { id: 'positive', label: 'Réponse positive' },
+    { id: 'negative', label: 'Réponse négative' },
+  ];
+  return (
+    <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.45)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:500}}>
+      <div className="card fade-in" style={{width:560,maxHeight:'80vh',overflowY:'auto',borderRadius:12,boxShadow:'0 8px 40px rgba(0,0,0,0.18)'}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
+          <div style={{fontWeight:800,fontSize:16,color:'var(--c-navy)'}}>Réponse automatique</div>
+          <button className="btn btn-ghost btn-sm" onClick={onClose}>✕</button>
+        </div>
+        <div style={{fontSize:13,color:'var(--c-gray)',marginBottom:16}}>
+          Destinataire : <strong style={{color:'var(--c-black)'}}>{cand.name}</strong> · {cand.email}
+        </div>
+        <div className="response-tabs">
+          {tabs.map(t => <div key={t.id} className={`response-tab ${tab===t.id?'active':''}`} onClick={() => setTab(t.id)}>{t.label}</div>)}
+        </div>
+        <div className="response-template" dangerouslySetInnerHTML={{__html: RESPONSE_TEMPLATES[tab]}}></div>
+        <div style={{display:'flex',gap:8,marginTop:16,justifyContent:'flex-end'}}>
+          <button className="btn btn-outline" onClick={onClose}>Annuler</button>
+          <button className="btn btn-gold" onClick={() => onSend()}>Envoyer ✈</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+function IngestionPage({ onNavigate, onCandidateImported }) {
+  const OFFERS = [
+    { id: 1, title: 'Responsable Développement Commercial', location: 'Paris · CDI · 5–8 ans' },
+    { id: 2, title: "Chargé(e) d'affaires Île-de-France", location: 'Paris · CDI · 3–5 ans' },
+    { id: 3, title: 'Ingénieur Commercial Grands Comptes', location: 'Lyon · CDI · 4–6 ans' },
+  ];
+
+  const PROFILES = {
+    pdf: { name:'Marie Dupont', initials:'MD', color:'#5a3e8c', title:'Responsable Commercial B2B', experience:6, location:'Paris 15e', email:'m.dupont@email.fr', sourceType:'sc', score:82,
+      fields:[['Nom complet','Marie Dupont'],['Email','m.dupont@email.fr'],['Téléphone','+33 6 12 34 56 78'],['Poste actuel','Responsable Commercial B2B'],['Expérience','6 ans'],['Formation','Master Commerce – ESSEC'],['Localisation','Paris 15e']],
+      skills:['Développement commercial','CRM','Management',"Appels d'offres",'B2B'], languages:["Français (natif)","Anglais (B2)"], education:"Master Commerce – ESSEC",
+      matchCriteria:{experience:90,competences:88,secteur:82,formation:90,localisation:100}, excerpt:"6 ans d'expérience en développement commercial B2B. Ancienne Responsable chez Engie Services.",
+    },
+    li: { name:'Jean-Baptiste Kone', initials:'JK', color:'#2c7a4b', title:'Business Developer Africa', experience:7, location:'Paris 8e', email:'jb.kone@email.fr', sourceType:'li', score:77,
+      fields:[['Nom complet','Jean-Baptiste Kone'],['Email','jb.kone@email.fr'],['Téléphone','+33 7 45 23 11 89'],['Poste actuel','Business Developer Africa'],['Expérience','7 ans'],['Formation','MBA – Grenoble EM'],['Localisation','Paris 8e']],
+      skills:['Business development','Négociation','CRM Salesforce','B2B','Afrique subsaharienne'], languages:["Français (natif)","Anglais (C1)","Dioula (natif)"], education:"MBA – Grenoble École de Management",
+      matchCriteria:{experience:80,competences:82,secteur:90,formation:75,localisation:95}, excerpt:"7 ans en business development en Afrique de l'Ouest. Expert des marchés émergents et logistique internationale.",
+    },
+    jb: { name:'Aurélie Voss', initials:'AV', color:'#a06010', title:'Key Account Manager', experience:5, location:'Neuilly-sur-Seine', email:'a.voss@email.fr', sourceType:'jb', score:69,
+      fields:[['Nom complet','Aurélie Voss'],['Email','a.voss@email.fr'],['Téléphone','+33 6 88 44 21 37'],['Poste actuel','Key Account Manager'],['Expérience','5 ans'],['Formation','Bachelor Business – EBS Paris'],['Localisation','Neuilly-sur-Seine']],
+      skills:['Key Account Management','Grands comptes','CRM HubSpot','Reporting','Secteur services'], languages:["Français (natif)","Anglais (B1)"], education:"Bachelor Business – EBS Paris",
+      matchCriteria:{experience:65,competences:72,secteur:60,formation:68,localisation:88}, excerpt:"5 ans en gestion de comptes clés dans les services B2B. Bonne maîtrise des cycles de vente complexes.",
+    },
+  };
+
+  const STEPS = [
+    { title:'Réception & validation du fichier', detail:'Vérification du format et intégrité du document', icon:'📥', duration:900 },
+    { title:'Extraction du texte (OCR)', detail:'Lecture intelligente du contenu — 2 pages traitées', icon:'🔍', duration:1100 },
+    { title:'Parsing des informations', detail:'Identification : Nom, Contact, Expériences, Formations, Compétences…', icon:'⚙️', duration:1200 },
+    { title:'Structuration des données', detail:'Conversion en profil structuré JSON normalisé', icon:'🗂️', duration:900 },
+    { title:'Calcul du score IA de matching', detail:'Analyse sémantique des compétences vs offre cible', icon:'🤖', duration:1400 },
+    { title:'Enregistrement & notification', detail:'Profil indexé · Réponse automatique générée', icon:'✅', duration:700 },
+  ];
+
+  const [selectedOffer, setSelectedOffer] = useState(null);
+  const [phase, setPhase] = useState('setup'); // setup | upload | analyzing | done
+  const [activeSource, setActiveSource] = useState(null);
+  const [fileName, setFileName] = useState(null);
+  const [step, setStep] = useState(-1);
+  const [stepProgress, setStepProgress] = useState(0);
+  const [revealedFields, setRevealedFields] = useState([]);
+  const [toast, setToast] = useState(null);
+  const fileRef = useRef(null);
+  const progressRef = useRef(null);
+
+  const selectSource = (src) => {
+    if (!selectedOffer) return;
+    if (src === 'pdf') {
+      // Open file dialog directly — don't change phase yet
+      fileRef.current?.click();
+      return;
+    }
+    setActiveSource(src);
+    startAnalysis(src);
+  };
+
+  const startAnalysis = (src) => {
+    const s = src || activeSource;
+    setPhase('analyzing'); setStep(0); setStepProgress(0); setRevealedFields([]);
+    let cur = 0;
+    const runStep = (idx) => {
+      if (idx >= STEPS.length) {
+        // Reveal result fields one by one
+        const profile = PROFILES[s];
+        profile.fields.forEach((_, i) => {
+          setTimeout(() => setRevealedFields(prev => [...prev, i]), i * 180);
+        });
+        setTimeout(() => {
+          setPhase('done');
+          if (onCandidateImported) onCandidateImported({
+            ...profile, id: Date.now(), responded: false,
+            received: new Date().toISOString().slice(0,10),
+            status: profile.score>=80 ? 'Top profil' : profile.score>=65 ? 'Pertinent' : 'À évaluer',
+          });
+          setToast(`✓ ${profile.name} ajouté(e) aux candidatures`);
+          setTimeout(() => setToast(null), 4000);
+        }, profile.fields.length * 180 + 600);
+        return;
+      }
+      setStep(idx); setStepProgress(0);
+      // Animate progress bar for this step
+      const dur = STEPS[idx].duration;
+      const start = Date.now();
+      const tick = setInterval(() => {
+        const pct = Math.min(100, ((Date.now() - start) / dur) * 100);
+        setStepProgress(pct);
+        if (pct >= 100) { clearInterval(tick); setTimeout(() => runStep(idx + 1), 120); }
+      }, 30);
+    };
+    runStep(0);
+  };
+
+  const reset = () => { setPhase('setup'); setActiveSource(null); setFileName(null); setStep(-1); setStepProgress(0); setRevealedFields([]); };
+
+  const profile = activeSource ? PROFILES[activeSource] : null;
+  const scoreColor = profile ? (profile.score>=80 ? '#1a7a42' : profile.score>=65 ? '#a06010' : '#b03030') : '#000';
+  const scoreBg = profile ? (profile.score>=80 ? 'rgba(26,122,66,0.07)' : profile.score>=65 ? '#fff8e6' : '#fceaea') : '';
+  const scoreBorder = profile ? (profile.score>=80 ? '#b8e8cc' : profile.score>=65 ? '#f0dc8c' : '#f5bcbc') : '';
+
+  return (
+    <div className="page fade-in" style={{background:'#F5F6FA'}}>
+
+      {/* Étape 1 — Offre */}
+      <div style={{background:'white',borderRadius:12,padding:'20px 24px',border:'1px solid #eee',marginBottom:14,boxShadow:'0 1px 4px rgba(0,0,0,0.04)'}}>
+        <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:14}}>
+          <div style={{width:26,height:26,borderRadius:'50%',background:selectedOffer?'var(--c-navy)':'var(--c-silver)',color:'white',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:800}}>1</div>
+          <div style={{fontWeight:800,fontSize:14,color:'var(--c-navy)'}}>Sélectionner une offre</div>
+          {selectedOffer && <span style={{fontSize:11,background:'#e6f6ef',color:'#1a7a42',fontWeight:700,padding:'2px 8px',borderRadius:20}}>✓ Sélectionnée</span>}
+          {selectedOffer && phase !== 'setup' && <button className="btn btn-ghost btn-sm" style={{marginLeft:'auto',fontSize:11}} onClick={reset}>Recommencer</button>}
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10}}>
+          {OFFERS.map(o => (
+            <div key={o.id} onClick={() => { setSelectedOffer(o.id); reset(); }}
+              style={{padding:'12px 14px',borderRadius:8,border:`1.5px solid ${selectedOffer===o.id?'var(--c-navy)':'var(--c-silver)'}`,cursor:'pointer',background:selectedOffer===o.id?'rgba(20,60,100,0.05)':'white',transition:'all 0.15s'}}>
+              <div style={{fontWeight:700,fontSize:13,color:'var(--c-navy)',marginBottom:3}}>{o.title}</div>
+              <div style={{fontSize:11.5,color:'var(--c-gray)'}}>{o.location}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Étape 2 — Source */}
+      <div style={{background:'white',borderRadius:12,padding:'20px 24px',border:'1px solid #eee',marginBottom:14,boxShadow:'0 1px 4px rgba(0,0,0,0.04)',opacity:selectedOffer?1:0.4,pointerEvents:selectedOffer?'auto':'none',transition:'opacity 0.2s'}}>
+        <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:14}}>
+          <div style={{width:26,height:26,borderRadius:'50%',background:activeSource?'var(--c-navy)':'var(--c-silver)',color:'white',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:800}}>2</div>
+          <div style={{fontWeight:800,fontSize:14,color:'var(--c-navy)'}}>Source d'import</div>
+          {!selectedOffer && <span style={{fontSize:11,color:'var(--c-gray)',marginLeft:4}}>— Sélectionnez d'abord une offre</span>}
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12}}>
+          {[
+            {id:'pdf',icon:'📄',title:'Fichier PDF / Word',desc:'CV reçu par email ou upload direct',hasUpload:true},
+            {id:'li',icon:<span style={{fontWeight:900,fontSize:22,color:'#0A66C2',fontFamily:'sans-serif'}}>in</span>,title:'Profil LinkedIn',desc:'URL LinkedIn ou export de profil',hasUpload:false},
+            {id:'jb',icon:'🔗',title:'Job board',desc:'Candidature hors flux automatique',hasUpload:false},
+          ].map(s => (
+            <div key={s.id}
+              onClick={() => phase==='setup' && selectSource(s.id)}
+              style={{position:'relative',padding:'20px 16px',textAlign:'center',cursor:phase==='setup'?'pointer':'default',
+                border:`2px ${activeSource===s.id?'solid':'dashed'} ${activeSource===s.id?'var(--c-navy)':'var(--c-silver)'}`,
+                borderRadius:10,background:activeSource===s.id?'rgba(20,60,100,0.04)':'white',
+                transition:'all 0.2s'}}>
+              <div style={{fontSize:28,marginBottom:8}}>{s.icon}</div>
+              <div style={{fontSize:13,fontWeight:700,color:'var(--c-navy)',marginBottom:4}}>{s.title}</div>
+              <div style={{fontSize:11.5,color:'var(--c-gray)',lineHeight:1.5}}>{s.desc}</div>
+              {s.hasUpload && (
+                <div style={{marginTop:10,fontSize:11.5,color:'var(--c-navy)',fontWeight:600,opacity:0.7}}>
+                  {fileName && activeSource==='pdf' ? <span>📎 {fileName}</span> : <span>Cliquer pour sélectionner un fichier</span>}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Hidden file input — always mounted */}
+        <input ref={fileRef} type="file" accept=".pdf,.doc,.docx" style={{display:'none'}}
+          onChange={e => { if(e.target.files[0]){ setFileName(e.target.files[0].name); setActiveSource('pdf'); setPhase('upload'); } }} />
+
+        {/* Upload ready state */}
+        {phase === 'upload' && fileName && (
+          <div className="fade-in" style={{marginTop:14,padding:'14px 18px',background:'rgba(20,60,100,0.04)',borderRadius:8,border:'1px solid var(--c-gold-light)',display:'flex',alignItems:'center',gap:14}}>
+            <div style={{fontSize:28}}>📄</div>
+            <div style={{flex:1}}>
+              <div style={{fontWeight:700,fontSize:13,color:'var(--c-navy)'}}>{fileName}</div>
+              <div style={{fontSize:12,color:'var(--c-gray)',marginTop:2}}>Prêt pour l'analyse · Offre : {OFFERS.find(o=>o.id===selectedOffer)?.title}</div>
+            </div>
+            <button className="btn btn-gold" style={{animation:'glowPulse 1.5s infinite'}} onClick={() => startAnalysis('pdf')}>
+              🚀 Lancer l'analyse IA
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Étape 3 — Pipeline + résultat */}
+      {(phase === 'analyzing' || phase === 'done') && profile && (
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}} className="fade-in">
+
+          {/* Pipeline animé */}
+          <div style={{background:'var(--c-navy)',borderRadius:12,padding:'24px',boxShadow:'0 4px 24px rgba(20,60,100,0.25)',overflow:'hidden',position:'relative'}}>
+            {/* BG glow */}
+            <div style={{position:'absolute',top:-40,right:-40,width:160,height:160,background:'rgba(240,180,80,0.08)',borderRadius:'50%',pointerEvents:'none'}}></div>
+
+            <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:20}}>
+              <div style={{width:26,height:26,borderRadius:'50%',background:'var(--c-gold)',color:'var(--c-navy)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:800}}>3</div>
+              <div style={{fontWeight:800,fontSize:14,color:'white'}}>Analyse en cours</div>
+              {phase==='done'
+                ? <span style={{marginLeft:'auto',fontSize:11,background:'rgba(26,122,66,0.3)',color:'#7ef5a8',fontWeight:700,padding:'2px 10px',borderRadius:20}}>✓ Terminé</span>
+                : <div style={{marginLeft:'auto',display:'flex',alignItems:'center',gap:6,fontSize:12,color:'rgba(255,255,255,0.6)'}}><div className="spinner" style={{width:12,height:12,borderColor:'rgba(255,255,255,0.2)',borderTopColor:'var(--c-gold)'}}></div>IA en cours…</div>
+              }
+            </div>
+
+            {/* Ripple pulse when active */}
+            {phase === 'analyzing' && (
+              <div style={{position:'relative',height:60,marginBottom:16,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                {[0,1,2].map(i => (
+                  <div key={i} style={{position:'absolute',width:40,height:40,borderRadius:'50%',background:'var(--c-gold)',animation:`ripple 2s ${i*0.6}s infinite ease-out`,opacity:0.4}}></div>
+                ))}
+                <div style={{width:40,height:40,borderRadius:'50%',background:'var(--c-gold)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,zIndex:1}}>🤖</div>
+              </div>
+            )}
+            {phase === 'done' && (
+              <div style={{textAlign:'center',marginBottom:16,padding:'10px 0'}}>
+                <div style={{fontSize:36}}>✅</div>
+                <div style={{color:'#7ef5a8',fontWeight:700,fontSize:13,marginTop:4}}>Analyse complète</div>
+              </div>
+            )}
+
+            {/* Steps */}
+            <div style={{display:'flex',flexDirection:'column',gap:0}}>
+              {STEPS.map((s,i) => {
+                const isDone = i < step || phase === 'done';
+                const isActive = i === step && phase === 'analyzing';
+                const isPending = i > step && phase === 'analyzing';
+                return (
+                  <div key={i} style={{padding:'10px 0',borderBottom:i<STEPS.length-1?'1px solid rgba(255,255,255,0.07)':'none',opacity:isPending?0.35:1,transition:'opacity 0.4s'}}>
+                    <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:isActive?6:0}}>
+                      <div style={{width:28,height:28,borderRadius:'50%',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:700,
+                        background:isDone?'#1a7a42':isActive?'var(--c-gold)':'rgba(255,255,255,0.1)',
+                        color:isDone?'white':isActive?'var(--c-navy)':'rgba(255,255,255,0.4)',
+                        animation:isActive?'glowPulse 1.2s infinite':'none'}}>
+                        {isDone?'✓':s.icon}
+                      </div>
+                      <div style={{flex:1}}>
+                        <div style={{fontSize:12.5,fontWeight:isDone||isActive?700:500,color:isDone?'#7ef5a8':isActive?'var(--c-gold)':'rgba(255,255,255,0.4)'}}>{s.title}</div>
+                        {(isDone||isActive) && <div style={{fontSize:11,color:'rgba(255,255,255,0.45)',marginTop:1}}>{s.detail}</div>}
+                      </div>
+                    </div>
+                    {/* Progress bar for active step */}
+                    {isActive && (
+                      <div style={{marginLeft:38,height:3,background:'rgba(255,255,255,0.1)',borderRadius:3,overflow:'hidden',marginTop:4}}>
+                        <div style={{height:'100%',background:'var(--c-gold)',borderRadius:3,width:`${stepProgress}%`,transition:'width 0.03s linear'}}></div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Résultat extraction */}
+          <div style={{background:'white',borderRadius:12,padding:'22px 24px',border:'1px solid #eee',boxShadow:'0 1px 4px rgba(0,0,0,0.04)',minHeight:400}}>
+            <div style={{fontWeight:800,fontSize:14,color:'var(--c-navy)',marginBottom:14,display:'flex',alignItems:'center',gap:8}}>
+              Résultat de l'extraction
+              {phase==='analyzing' && revealedFields.length===0 && <div style={{display:'flex',alignItems:'center',gap:6,fontSize:12,color:'var(--c-gray)',fontWeight:400}}><div className="spinner" style={{width:12,height:12}}></div>En attente…</div>}
+            </div>
+
+            {/* Profile card reveal */}
+            {revealedFields.length > 0 && (
+              <div style={{display:'flex',alignItems:'center',gap:10,padding:'12px 14px',background:'var(--c-cream)',borderRadius:8,border:'1px solid var(--c-gold-light)',marginBottom:14,animation:'revealField 0.4s ease'}}>
+                <div className="avatar" style={{background:profile.color,width:42,height:42,fontSize:16}}>{profile.initials}</div>
+                <div>
+                  <div style={{fontWeight:800,fontSize:14,color:'var(--c-black)'}}>{profile.name}</div>
+                  <div style={{fontSize:12,color:'var(--c-gray)'}}>{profile.title}</div>
+                </div>
+              </div>
+            )}
+
+            {/* Fields revealed one by one */}
+            <div style={{display:'flex',flexDirection:'column',gap:0,marginBottom:12}}>
+              {profile.fields.map(([k,v],i) => revealedFields.includes(i) && (
+                <div key={k} style={{display:'flex',gap:12,padding:'7px 0',borderBottom:'1px solid var(--c-silver)',animation:'revealField 0.3s ease both'}}>
+                  <div style={{fontSize:10.5,color:'var(--c-gray)',fontWeight:700,width:105,flexShrink:0,textTransform:'uppercase',letterSpacing:'0.05em',paddingTop:1}}>{k}</div>
+                  <div style={{fontSize:13,color:'var(--c-black)',fontWeight:600}}>{v}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Skills */}
+            {revealedFields.length >= profile.fields.length && (
+              <div style={{animation:'revealField 0.4s ease',marginBottom:14}}>
+                <div style={{fontSize:10.5,fontWeight:700,color:'var(--c-gray)',textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:6}}>Compétences identifiées</div>
+                <div style={{display:'flex',gap:5,flexWrap:'wrap'}}>
+                  {profile.skills.map(s=><span key={s} className="tag" style={{fontSize:11,animation:'revealField 0.3s ease'}}>{s}</span>)}
+                </div>
+              </div>
+            )}
+
+            {/* Score */}
+            {phase === 'done' && (
+              <div style={{padding:'14px 16px',background:scoreBg,borderRadius:10,border:`1.5px solid ${scoreBorder}`,marginBottom:14,animation:'revealField 0.5s ease'}}>
+                <div style={{fontSize:10.5,fontWeight:700,color:scoreColor,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:6}}>Score IA · {OFFERS.find(o=>o.id===selectedOffer)?.title}</div>
+                <div style={{display:'flex',alignItems:'flex-end',gap:10,marginBottom:6}}>
+                  <div style={{fontSize:38,fontWeight:900,color:scoreColor,lineHeight:1}}>{profile.score}</div>
+                  <div style={{fontSize:14,color:scoreColor,fontWeight:500,paddingBottom:5}}>/100</div>
+                  <div style={{flex:1,height:8,background:'rgba(0,0,0,0.08)',borderRadius:4,overflow:'hidden',marginBottom:8}}>
+                    <div style={{height:'100%',borderRadius:4,background:scoreColor,animation:'progressFill 1.2s ease-out forwards',width:`${profile.score}%`}}></div>
+                  </div>
+                </div>
+                <div style={{fontSize:12,color:scoreColor,fontWeight:600}}>
+                  {profile.score>=80?'→ Ajouté à la shortlist automatiquement':profile.score>=65?'→ Profil pertinent, à examiner':'→ Profil enregistré, non retenu automatiquement'}
+                </div>
+              </div>
+            )}
+
+            {phase === 'done' && (
+              <div style={{display:'flex',gap:8,animation:'revealField 0.4s 0.3s ease both',opacity:0,animationFillMode:'forwards'}}>
+                <button className="btn btn-primary" style={{flex:1,justifyContent:'center'}} onClick={()=>onNavigate('candidates')}>Voir dans Candidatures →</button>
+                <button className="btn btn-outline btn-sm" onClick={reset}>Nouvel import</button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {toast && <div className="toast"><span className="toast-icon">✓</span>{toast}</div>}
+    </div>
+  );
+}
+
+
+
+function IntegrationsPage() {
+  const [statuses, setStatuses] = React.useState({
+    linkedin: 'connected',
+    site: 'idle',
+    educarriere: 'idle',
+  });
+
+  const connect = (id) => {
+    setStatuses(s => ({...s, [id]: 'connecting'}));
+    setTimeout(() => setStatuses(s => ({...s, [id]: 'connected'})), 2000);
+  };
+  const disconnect = (id) => setStatuses(s => ({...s, [id]: 'idle'}));
+
+  const PLATFORMS = [
+    {
+      id: 'linkedin',
+      name: 'LinkedIn Jobs',
+      category: 'Réseau professionnel',
+      logo: <div style={{width:44,height:44,borderRadius:8,background:'#0A66C2',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}><svg viewBox="0 0 24 24" width="26" height="26" fill="white"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></div>,
+      desc: 'Candidatures Easy Apply reçues automatiquement via l\'API LinkedIn Talent Solutions.',
+      method: 'API OAuth 2.0',
+      volume: '24 CV / semaine (moy.)',
+      flux: [
+        { label: 'Responsable Développement Commercial', count: 24, sync: 'il y a 12 min' },
+        { label: 'Chargé(e) d\'affaires Île-de-France', count: 11, sync: 'il y a 1h' },
+      ],
+      steps: [
+        { title: 'Connexion OAuth LinkedIn', desc: 'Authentification sécurisée via l\'API Talent Solutions.' },
+        { title: 'Collecte Easy Apply', desc: 'Chaque candidature déposée sur vos offres est transmise en temps réel.' },
+        { title: 'Enrichissement du profil', desc: 'Expériences, compétences, recommandations sont structurées.' },
+        { title: 'Scoring automatique', desc: 'Le profil est scoré par rapport à l\'offre cible.' },
+      ],
+    },
+    {
+      id: 'site',
+      name: 'Site carrière AGL',
+      category: 'Site web corporate',
+      logo: <div style={{width:44,height:44,borderRadius:8,background:'var(--c-navy)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,padding:4}}><img src="uploads/AGL FINAL.png" alt="AGL" style={{width:'100%',objectFit:'contain'}} /></div>,
+      desc: 'Formulaire de candidature sur votre site officiel, connecté directement à RecrutIA via webhook.',
+      method: 'Webhook / iFrame',
+      volume: '13 CV / semaine (moy.)',
+      flux: [],
+      steps: [
+        { title: 'Intégration du widget', desc: 'Collez un snippet JavaScript sur votre page Offres d\'emploi.' },
+        { title: 'Formulaire personnalisé', desc: 'Le candidat dépose son CV directement sur votre site.' },
+        { title: 'Transmission sécurisée', desc: 'Le dossier est envoyé en temps réel via webhook HTTPS.' },
+        { title: 'Parsing & scoring', desc: 'Traitement automatique du CV dans les secondes suivant le dépôt.' },
+      ],
+    },
+    {
+      id: 'educarriere',
+      name: 'Educarrière',
+      category: 'Job board Afrique',
+      logo: <div style={{width:44,height:44,borderRadius:8,background:'white',border:'1px solid #eee',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,padding:3}}><img src="uploads/logo.png" alt="Educarrière" style={{width:'100%',objectFit:'contain'}} /></div>,
+      desc: 'Portail d\'emploi panafricain (educarriere.ci). Import des candidatures via export CSV ou API.',
+      method: 'Export CSV / Email',
+      volume: '—',
+      url: 'https://www.educarriere.ci/',
+      flux: [],
+      steps: [
+        { title: 'Export CSV Educarrière', desc: 'Téléchargez la liste des candidatures depuis votre espace employeur.' },
+        { title: 'Import dans RecrutIA', desc: 'Glissez le fichier CSV dans l\'interface d\'import pour traitement en masse.' },
+        { title: 'Mapping des colonnes', desc: 'RecrutIA détecte automatiquement les champs (nom, email, CV, poste…).' },
+        { title: 'Analyse et scoring', desc: 'Chaque profil est analysé et scoré vis-à-vis de l\'offre cible.' },
+      ],
+    },
+  ];
+
+  const [expanded, setExpanded] = React.useState(null);
+
+  return (
+    <div className="page fade-in">
+      <div style={{fontSize:13,color:'var(--c-gray)',marginBottom:20}}>
+        Connectez vos plateformes de recrutement pour centraliser toutes vos candidatures dans RecrutIA.
+        <strong style={{color:'var(--c-navy)'}}> {Object.values(statuses).filter(s => s === 'connected').length} plateforme{Object.values(statuses).filter(s => s === 'connected').length > 1 ? 's' : ''} connectée{Object.values(statuses).filter(s => s === 'connected').length > 1 ? 's' : ''}</strong> sur {PLATFORMS.length}.
+      </div>
+
+      <div style={{display:'flex',flexDirection:'column',gap:14}}>
+        {PLATFORMS.map(p => {
+          const status = statuses[p.id];
+          const isExpanded = expanded === p.id;
+          return (
+            <div key={p.id} className="card" style={{padding:0,overflow:'hidden',border: status==='connected' ? '1.5px solid #b8e8cc' : '1px solid var(--c-silver)'}}>
+              {/* Header row */}
+              <div style={{display:'flex',alignItems:'center',gap:16,padding:'16px 20px',cursor:'pointer'}}
+                onClick={() => setExpanded(isExpanded ? null : p.id)}>
+                {p.logo}
+                <div style={{flex:1}}>
+                  <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:2}}>
+                    <span style={{fontWeight:800,fontSize:15,color:'var(--c-black)'}}>{p.name}</span>
+                    <span style={{fontSize:11,color:'var(--c-gray)',background:'var(--c-cream)',padding:'1px 7px',borderRadius:20,border:'1px solid var(--c-silver)'}}>{p.category}</span>
+                    {p.url && <a href={p.url} target="_blank" rel="noopener" onClick={e => e.stopPropagation()} style={{fontSize:11,color:'var(--c-slate)',textDecoration:'none',display:'flex',alignItems:'center',gap:3}}>↗ Site</a>}
+                  </div>
+                  <div style={{fontSize:12.5,color:'var(--c-gray)'}}>{p.desc}</div>
+                </div>
+                <div style={{display:'flex',alignItems:'center',gap:10,flexShrink:0}}>
+                  <div style={{textAlign:'right'}}>
+                    <div style={{fontSize:11,color:'var(--c-gray)',marginBottom:2}}>{p.method}</div>
+                    {p.volume !== '—' && <div style={{fontSize:11,color:'var(--c-slate)'}}>{p.volume}</div>}
+                  </div>
+                  {status === 'idle' && <button className="btn btn-primary btn-sm" onClick={e => { e.stopPropagation(); connect(p.id); }}>Connecter</button>}
+                  {status === 'connecting' && <div style={{display:'flex',alignItems:'center',gap:6,color:'var(--c-gray)',fontSize:12}}><div className="spinner" style={{width:14,height:14}}></div>Connexion…</div>}
+                  {status === 'connected' && (
+                    <div style={{display:'flex',alignItems:'center',gap:8}}>
+                      <div style={{fontSize:12,fontWeight:700,color:'#1a7a42',display:'flex',alignItems:'center',gap:4}}><span>●</span> Connecté</div>
+                      <button className="btn btn-ghost btn-sm" style={{fontSize:11,color:'var(--c-gray)'}} onClick={e => { e.stopPropagation(); disconnect(p.id); }}>Déconnecter</button>
+                    </div>
+                  )}
+                  <div style={{color:'var(--c-gray)',fontSize:14,transform: isExpanded ? 'rotate(180deg)' : 'none',transition:'transform 0.2s'}}>▾</div>
+                </div>
+              </div>
+
+              {/* Expanded detail */}
+              {isExpanded && (
+                <div style={{borderTop:'1px solid var(--c-silver)',padding:'16px 20px 20px',background:'var(--c-cream)',animation:'fadeIn 0.2s ease'}} className="fade-in">
+                  <div className="two-col" style={{gap:24}}>
+                    <div>
+                      <div style={{fontSize:11,fontWeight:700,color:'var(--c-gray)',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:10}}>Comment ça fonctionne</div>
+                      <div style={{display:'flex',flexDirection:'column',gap:0}}>
+                        {p.steps.map((s,i) => (
+                          <div key={i} className="analysis-step" style={{animationDelay:`${i*0.07}s`,paddingTop:10,paddingBottom:10}}>
+                            <div className="step-dot step-done" style={{width:24,height:24,fontSize:11}}>{i+1}</div>
+                            <div>
+                              <div className="step-title" style={{fontSize:12.5}}>{s.title}</div>
+                              <div className="step-detail" style={{fontSize:11.5}}>{s.desc}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      {status === 'connected' && p.flux.length > 0 && (
+                        <div>
+                          <div style={{fontSize:11,fontWeight:700,color:'var(--c-gray)',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:10}}>Flux actifs</div>
+                          {p.flux.map((f,i) => (
+                            <div key={i} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',background:'white',borderRadius:6,border:'1px solid var(--c-silver)',marginBottom:8}}>
+                              <div style={{flex:1,fontSize:12,color:'var(--c-black)',fontWeight:600}}>{f.label}</div>
+                              <div style={{fontSize:11.5,color:'var(--c-gray)'}}>{f.count} CV</div>
+                              <div style={{fontSize:11,color:'var(--c-slate-light)'}}>Sync. {f.sync}</div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {status !== 'connected' && (
+                        <div style={{display:'flex',flexDirection:'column',gap:10}}>
+                          <div style={{fontSize:11,fontWeight:700,color:'var(--c-gray)',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:2}}>Alternative sans API</div>
+                          {[
+                            { icon:'📥', title:'Import CSV/Excel', desc:'Exportez la liste des candidatures depuis la plateforme et importez le fichier dans RecrutIA.' },
+                            { icon:'📧', title:'Transfert par email', desc:'Configurez un transfert automatique des emails de candidature vers votre adresse RecrutIA dédiée.' },
+                          ].map(a => (
+                            <div key={a.title} style={{padding:'12px',background:'white',borderRadius:6,border:'1px solid var(--c-silver)',display:'flex',gap:10,alignItems:'flex-start'}}>
+                              <div style={{fontSize:18}}>{a.icon}</div>
+                              <div>
+                                <div style={{fontWeight:700,fontSize:12.5,color:'var(--c-navy)',marginBottom:2}}>{a.title}</div>
+                                <div style={{fontSize:11.5,color:'var(--c-gray)',lineHeight:1.5}}>{a.desc}</div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function ContactModal({ cand, onClose }) {
+  const [sent, setSent] = useState(false);
+  const [msg, setMsg] = useState(`Bonjour ${cand.name.split(' ')[0]},\n\nNous avons bien noté votre profil dans notre base de talents AGL et serions ravis d'échanger avec vous sur de nouvelles opportunités correspondant à votre expérience.\n\nSeriez-vous disponible pour un bref entretien exploratoire ?\n\nCordialement,\nL'équipe Recrutement AGL`);
+  return (
+    <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.45)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:500}} onClick={onClose}>
+      <div className="card fade-in" style={{width:520,borderRadius:14,boxShadow:'0 16px 48px rgba(0,0,0,0.2)',padding:28}} onClick={e=>e.stopPropagation()}>
+        {!sent ? <>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
+            <div style={{fontWeight:800,fontSize:16,color:'var(--c-navy)'}}>Contacter le talent</div>
+            <button className="btn btn-ghost btn-sm" onClick={onClose}>✕</button>
+          </div>
+          <div style={{display:'flex',alignItems:'center',gap:10,padding:'10px 14px',background:'var(--c-cream)',borderRadius:8,border:'1px solid var(--c-gold-light)',marginBottom:16}}>
+            <div className="avatar" style={{background:cand.color,width:32,height:32,fontSize:12}}>{cand.initials}</div>
+            <div>
+              <div style={{fontWeight:700,fontSize:13}}>{cand.name}</div>
+              <div style={{fontSize:11.5,color:'var(--c-gray)'}}>{cand.email || `${cand.name.toLowerCase().replace(' ','.')}@email.fr`}</div>
+            </div>
+          </div>
+          <textarea value={msg} onChange={e=>setMsg(e.target.value)} style={{width:'100%',minHeight:160,padding:14,fontSize:13,lineHeight:1.8,border:'1.5px solid var(--c-silver)',borderRadius:8,fontFamily:'inherit',resize:'vertical',boxSizing:'border-box',outline:'none',color:'var(--c-black)'}} />
+          <div style={{display:'flex',gap:8,justifyContent:'flex-end',marginTop:14}}>
+            <button className="btn btn-outline" onClick={onClose}>Annuler</button>
+            <button className="btn btn-gold" onClick={()=>setSent(true)}>Envoyer ✈</button>
+          </div>
+        </> : (
+          <div style={{textAlign:'center',padding:'32px 0'}}>
+            <div style={{fontSize:40,marginBottom:12}}>✅</div>
+            <div style={{fontWeight:800,fontSize:16,color:'var(--c-navy)',marginBottom:6}}>Message envoyé !</div>
+            <div style={{fontSize:13,color:'var(--c-gray)',marginBottom:20}}>Votre message a été transmis à <strong>{cand.name}</strong>.</div>
+            <button className="btn btn-primary" onClick={onClose}>Fermer</button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function TalentDetail({ cand, onClose, onContact }) {
+  return (
+    <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.45)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:500}} onClick={onClose}>
+      <div className="card fade-in" style={{width:480,maxHeight:'85vh',overflowY:'auto',borderRadius:14,boxShadow:'0 16px 48px rgba(0,0,0,0.2)',padding:0}} onClick={e=>e.stopPropagation()}>
+        {/* Header */}
+        <div style={{background:`linear-gradient(135deg, ${cand.color} 0%, ${cand.color}cc 100%)`,padding:'24px 24px 20px',borderRadius:'14px 14px 0 0',position:'relative'}}>
+          <button className="btn btn-ghost btn-sm" style={{position:'absolute',top:12,right:12,color:'white',opacity:0.8}} onClick={onClose}>✕</button>
+          <div style={{display:'flex',alignItems:'center',gap:14}}>
+            <div className="avatar" style={{background:'rgba(255,255,255,0.2)',color:'white',width:56,height:56,fontSize:20,border:'2px solid rgba(255,255,255,0.4)'}}>{cand.initials}</div>
+            <div>
+              <div style={{fontWeight:900,fontSize:18,color:'white',letterSpacing:'-0.02em'}}>{cand.name}</div>
+              <div style={{fontSize:13,color:'rgba(255,255,255,0.8)',marginTop:2}}>{cand.title}</div>
+              <div style={{fontSize:12,color:'rgba(255,255,255,0.6)',marginTop:2}}>{cand.location} · {cand.experience} ans exp.</div>
+            </div>
+          </div>
+          <div style={{position:'absolute',top:16,right:52}}><ScoreBadge score={cand.score} /></div>
+        </div>
+
+        <div style={{padding:24}}>
+          {/* Excerpt */}
+          {cand.excerpt && (
+            <div style={{background:'var(--c-cream)',borderRadius:8,padding:'12px 14px',borderLeft:'3px solid var(--c-gold)',marginBottom:16,fontSize:12.5,lineHeight:1.65,color:'var(--c-black)'}}>{cand.excerpt}</div>
+          )}
+
+          {/* Matching */}
+          {cand.matchCriteria && (
+            <div style={{marginBottom:16}}>
+              <div style={{fontSize:11,fontWeight:700,color:'var(--c-gray)',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:10}}>Matching par critère</div>
+              {Object.entries(cand.matchCriteria).map(([k,v]) => {
+                const labels={experience:'Expérience',competences:'Compétences',secteur:'Secteur',formation:'Formation',localisation:'Localisation'};
+                const col=v>=80?'#1a7a42':v>=60?'#a06010':'#b03030';
+                return (
+                  <div key={k} style={{marginBottom:7}}>
+                    <div style={{display:'flex',justifyContent:'space-between',fontSize:12,marginBottom:3}}>
+                      <span style={{color:'var(--c-black)'}}>{labels[k]}</span>
+                      <span style={{fontWeight:700,color:col}}>{v}%</span>
+                    </div>
+                    <div style={{height:6,background:'var(--c-silver)',borderRadius:4,overflow:'hidden'}}>
+                      <div style={{height:'100%',borderRadius:4,background:col,width:`${v}%`,transition:'width 0.8s ease'}}></div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Skills */}
+          <div style={{marginBottom:16}}>
+            <div style={{fontSize:11,fontWeight:700,color:'var(--c-gray)',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:8}}>Compétences</div>
+            <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+              {(cand.skills||[]).map(s=><span key={s} className="tag">{s}</span>)}
+            </div>
+          </div>
+
+          {/* Education & Languages */}
+          {cand.education && <div style={{marginBottom:10}}><div style={{fontSize:11,fontWeight:700,color:'var(--c-gray)',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:4}}>Formation</div><div style={{fontSize:12.5,color:'var(--c-black)'}}>{cand.education}</div></div>}
+          {cand.languages && <div style={{marginBottom:16}}><div style={{fontSize:11,fontWeight:700,color:'var(--c-gray)',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:4,marginTop:10}}>Langues</div>{cand.languages.map(l=><div key={l} style={{fontSize:12.5,color:'var(--c-black)'}}>· {l}</div>)}</div>}
+
+          <button className="btn btn-gold" style={{width:'100%',justifyContent:'center',marginTop:8}} onClick={()=>onContact(cand)}>
+            ✉ Contacter ce talent
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TalentPoolPage({ pool }) {
+  const [view, setView] = useState('cards'); // 'cards' | 'list'
+  const [search, setSearch] = useState('');
+  const [filterSkill, setFilterSkill] = useState('');
+  const [filterSource, setFilterSource] = useState('all');
+  const [filterScore, setFilterScore] = useState('all');
+  const [selected, setSelected] = useState(null);
+  const [contact, setContact] = useState(null);
+  const [poolPage, setPoolPage] = useState(1);
+  const PER = 6;
+
+  // All unique skills across pool
+  const allSkills = [...new Set(pool.flatMap(c => c.skills || []))].sort();
+
+  const filtered = pool.filter(c => {
+    if (search && !c.name.toLowerCase().includes(search.toLowerCase()) && !(c.title||'').toLowerCase().includes(search.toLowerCase())) return false;
+    if (filterSkill && !(c.skills||[]).includes(filterSkill)) return false;
+    if (filterSource !== 'all' && c.sourceType !== filterSource) return false;
+    if (filterScore === 'high' && c.score < 80) return false;
+    if (filterScore === 'med' && (c.score < 60 || c.score >= 80)) return false;
+    if (filterScore === 'low' && c.score >= 60) return false;
+    return true;
+  });
+
+  const totalPages = Math.ceil(filtered.length / PER);
+  const paginated = filtered.slice((poolPage-1)*PER, poolPage*PER);
+  useEffect(() => setPoolPage(1), [search, filterSkill, filterSource, filterScore]);
+
+  return (
+    <div className="page fade-in" style={{background:'#F5F6FA'}}>
+
+      {/* Header */}
+      <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:18}}>
+        <div style={{flex:1}}>
+          <div style={{fontWeight:800,fontSize:18,color:'var(--c-navy)',letterSpacing:'-0.02em'}}>Base de talents</div>
+          <div style={{fontSize:12.5,color:'var(--c-gray)',marginTop:2}}><strong style={{color:'var(--c-navy)'}}>{filtered.length}</strong> profil{filtered.length>1?'s':''} · Mis à jour automatiquement</div>
+        </div>
+        {/* View toggle */}
+        <div style={{display:'flex',gap:0,border:'1.5px solid var(--c-silver)',borderRadius:8,overflow:'hidden',background:'white'}}>
+          {[{id:'cards',icon:'▦ Cartes'},{id:'list',icon:'≡ Liste'}].map(v=>(
+            <div key={v.id} onClick={()=>setView(v.id)}
+              style={{padding:'7px 16px',fontSize:12,fontWeight:700,cursor:'pointer',background:view===v.id?'var(--c-navy)':'white',color:view===v.id?'white':'var(--c-gray)',transition:'all 0.15s',userSelect:'none'}}>
+              {v.icon}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div style={{background:'white',borderRadius:10,padding:'10px 16px',border:'1px solid #eee',marginBottom:16,display:'flex',gap:8,alignItems:'center',boxShadow:'0 1px 4px rgba(0,0,0,0.04)'}}>
+        <input type="text" placeholder="Rechercher…" value={search} onChange={e=>setSearch(e.target.value)}
+          style={{flex:'1 1 140px',minWidth:0,padding:'6px 10px',border:'1.5px solid var(--c-silver)',borderRadius:7,fontSize:12.5,fontFamily:'inherit',outline:'none'}} />
+        <div style={{width:1,height:24,background:'var(--c-silver)',flexShrink:0}}></div>
+        <select value={filterSkill} onChange={e=>setFilterSkill(e.target.value)}
+          style={{flex:'1 1 140px',minWidth:0,padding:'6px 8px',border:'1.5px solid var(--c-silver)',borderRadius:7,fontSize:12.5,fontFamily:'inherit',color:'var(--c-black)',background:'white',outline:'none',cursor:'pointer'}}>
+          <option value="">Toutes compétences</option>
+          {allSkills.map(s=><option key={s} value={s}>{s}</option>)}
+        </select>
+        <select value={filterSource} onChange={e=>setFilterSource(e.target.value)}
+          style={{flex:'1 1 120px',minWidth:0,padding:'6px 8px',border:'1.5px solid var(--c-silver)',borderRadius:7,fontSize:12.5,fontFamily:'inherit',color:'var(--c-black)',background:'white',outline:'none',cursor:'pointer'}}>
+          <option value="all">Toutes sources</option>
+          <option value="li">LinkedIn</option>
+          <option value="sc">Site carrière</option>
+          <option value="jb">Indeed / Autre</option>
+        </select>
+        <select value={filterScore} onChange={e=>setFilterScore(e.target.value)}
+          style={{flex:'1 1 120px',minWidth:0,padding:'6px 8px',border:'1.5px solid var(--c-silver)',borderRadius:7,fontSize:12.5,fontFamily:'inherit',color:'var(--c-black)',background:'white',outline:'none',cursor:'pointer'}}>
+          <option value="all">Tous scores</option>
+          <option value="high">Excellent (≥ 80)</option>
+          <option value="med">Moyen (60–79)</option>
+          <option value="low">Faible (&lt; 60)</option>
+        </select>
+        {(search||filterSkill||filterSource!=='all'||filterScore!=='all') && (
+          <button className="btn btn-ghost btn-sm" style={{flexShrink:0,whiteSpace:'nowrap'}} onClick={()=>{setSearch('');setFilterSkill('');setFilterSource('all');setFilterScore('all');}}>
+            ✕ Réinitialiser
+          </button>
+        )}
+        <div style={{fontSize:12,color:'var(--c-gray)',flexShrink:0,whiteSpace:'nowrap',marginLeft:4}}><strong style={{color:'var(--c-navy)'}}>{filtered.length}</strong> résultat{filtered.length>1?'s':''}</div>
+      </div>
+
+      {/* CARD VIEW */}
+      {view === 'cards' && (
+        <>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:14,marginBottom:16}}>
+            {paginated.map((c,i) => (
+              <div key={c.id} onClick={()=>setSelected(c)}
+                style={{background:'white',borderRadius:12,border:'1.5px solid #eee',padding:'18px',cursor:'pointer',transition:'all 0.2s',animationDelay:`${i*0.05}s`,position:'relative',overflow:'hidden'}}
+                className="fade-in"
+                onMouseEnter={e=>{e.currentTarget.style.transform='translateY(-3px)';e.currentTarget.style.boxShadow='0 8px 24px rgba(0,0,0,0.1)';e.currentTarget.style.borderColor='var(--c-navy)';}}
+                onMouseLeave={e=>{e.currentTarget.style.transform='';e.currentTarget.style.boxShadow='';e.currentTarget.style.borderColor='#eee';}}>
+                <div style={{position:'absolute',top:0,right:0,width:60,height:60,background:c.color,opacity:0.08,borderRadius:'0 12px 0 60px'}}></div>
+                <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:12}}>
+                  <div className="avatar" style={{background:c.color,width:40,height:40,fontSize:14}}>{c.initials}</div>
+                  <div style={{flex:1}}>
+                    <div style={{fontWeight:800,fontSize:14,color:'var(--c-black)'}}>{c.name}</div>
+                    <div style={{fontSize:11.5,color:'var(--c-gray)',marginTop:1}}>{c.title}</div>
+                  </div>
+                  <ScoreBadge score={c.score} />
+                </div>
+                <div style={{fontSize:12,color:'var(--c-gray)',marginBottom:10,display:'flex',gap:8}}>
+                  <span>📍 {c.location||'—'}</span>
+                  <span>· {c.experience} ans</span>
+                </div>
+                <div style={{display:'flex',gap:5,flexWrap:'wrap',marginBottom:12}}>
+                  {(c.skills||[]).slice(0,3).map(s=><span key={s} className="tag" style={{fontSize:10.5}}>{s}</span>)}
+                  {(c.skills||[]).length > 3 && <span style={{fontSize:10.5,color:'var(--c-gray)',padding:'2px 6px'}}>+{(c.skills||[]).length-3}</span>}
+                </div>
+                <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                  <SourceBadge type={c.sourceType} />
+                  <button className="btn btn-gold btn-sm" onClick={e=>{e.stopPropagation();setContact(c);}}>Contacter</button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Pagination cards */}
+          {totalPages > 1 && (
+            <div style={{display:'flex',justifyContent:'center',alignItems:'center',gap:6}}>
+              <button className="btn btn-outline btn-sm" onClick={()=>setPoolPage(p=>Math.max(1,p-1))} disabled={poolPage===1} style={{opacity:poolPage===1?0.4:1}}>←</button>
+              {Array.from({length:totalPages},(_,i)=>i+1).map(n=>(
+                <button key={n} className="btn btn-sm" onClick={()=>setPoolPage(n)} style={{minWidth:32,background:n===poolPage?'var(--c-navy)':'white',color:n===poolPage?'white':'var(--c-gray)',border:n===poolPage?'none':'1.5px solid var(--c-silver)'}}>{n}</button>
+              ))}
+              <button className="btn btn-outline btn-sm" onClick={()=>setPoolPage(p=>Math.min(totalPages,p+1))} disabled={poolPage===totalPages} style={{opacity:poolPage===totalPages?0.4:1}}>→</button>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* LIST VIEW */}
+      {view === 'list' && (
+        <div style={{background:'white',borderRadius:12,border:'1px solid #eee',overflow:'hidden',boxShadow:'0 1px 4px rgba(0,0,0,0.04)'}}>
+          <div style={{display:'grid',gridTemplateColumns:'2fr 1.4fr 0.8fr 0.8fr 80px 110px',borderBottom:'2px solid var(--c-silver)'}}>
+            {['Talent','Poste','Source','Score','Exp.','Action'].map(h=>(
+              <div key={h} style={{padding:'10px 14px',fontSize:'10.5px',fontWeight:700,color:'var(--c-gray)',textTransform:'uppercase',letterSpacing:'0.08em'}}>{h}</div>
+            ))}
+          </div>
+          {paginated.map((c,i)=>(
+            <div key={c.id} style={{display:'grid',gridTemplateColumns:'2fr 1.4fr 0.8fr 0.8fr 80px 110px',borderBottom:'1px solid var(--c-silver)',cursor:'pointer',transition:'background 0.12s',animationDelay:`${i*0.04}s'`}}
+              className="fade-in"
+              onMouseEnter={e=>e.currentTarget.style.background='#f8f9fb'}
+              onMouseLeave={e=>e.currentTarget.style.background='transparent'}
+              onClick={()=>setSelected(c)}>
+              <div style={{padding:'12px 14px',display:'flex',alignItems:'center',gap:10}}>
+                <div className="avatar" style={{background:c.color,width:32,height:32,fontSize:12}}>{c.initials}</div>
+                <div>
+                  <div style={{fontWeight:700,fontSize:13.5,color:'var(--c-black)'}}>{c.name}</div>
+                  <div style={{fontSize:11,color:'var(--c-gray)'}}>{c.location||'—'}</div>
+                </div>
+              </div>
+              <div style={{padding:'12px 14px',display:'flex',alignItems:'center',fontSize:13,color:'var(--c-black)'}}>{c.title}</div>
+              <div style={{padding:'12px 14px',display:'flex',alignItems:'center'}}><SourceBadge type={c.sourceType} /></div>
+              <div style={{padding:'12px 14px',display:'flex',alignItems:'center'}}><ScoreBadge score={c.score} /></div>
+              <div style={{padding:'12px 14px',display:'flex',alignItems:'center',fontSize:13,color:'var(--c-gray)'}}>{c.experience} ans</div>
+              <div style={{padding:'12px 14px',display:'flex',alignItems:'center'}}>
+                <button className="btn btn-gold btn-sm" onClick={e=>{e.stopPropagation();setContact(c);}}>Contacter</button>
+              </div>
+            </div>
+          ))}
+          {/* Pagination list */}
+          {totalPages > 1 && (
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'12px 16px',borderTop:'1px solid var(--c-silver)'}}>
+              <div style={{fontSize:12.5,color:'var(--c-gray)'}}>{filtered.length} talent{filtered.length>1?'s':''} · page <strong>{poolPage}</strong> sur <strong>{totalPages}</strong></div>
+              <div style={{display:'flex',gap:4}}>
+                <button className="btn btn-outline btn-sm" onClick={()=>setPoolPage(p=>Math.max(1,p-1))} disabled={poolPage===1} style={{opacity:poolPage===1?0.4:1}}>←</button>
+                {Array.from({length:totalPages},(_,i)=>i+1).map(n=>(
+                  <button key={n} className="btn btn-sm" onClick={()=>setPoolPage(n)} style={{minWidth:32,background:n===poolPage?'var(--c-navy)':'white',color:n===poolPage?'white':'var(--c-gray)',border:n===poolPage?'none':'1.5px solid var(--c-silver)'}}>{n}</button>
+                ))}
+                <button className="btn btn-outline btn-sm" onClick={()=>setPoolPage(p=>Math.min(totalPages,p+1))} disabled={poolPage===totalPages} style={{opacity:poolPage===totalPages?0.4:1}}>→</button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {selected && <TalentDetail cand={selected} onClose={()=>setSelected(null)} onContact={c=>{setSelected(null);setContact(c);}} />}
+      {contact && <ContactModal cand={contact} onClose={()=>setContact(null)} />}
+    </div>
+  );
+}
+
+function ResponsesPage() {
+  const [tab, setTab] = useState('ack');
+  const [editing, setEditing] = useState(false);
+  const [templates, setTemplates] = useState({
+    ack: RESPONSE_TEMPLATES.ack,
+    positive: RESPONSE_TEMPLATES.positive,
+    negative: RESPONSE_TEMPLATES.negative,
+  });
+  const [draftText, setDraftText] = useState('');
+  const [showAllHistory, setShowAllHistory] = useState(false);
+
+  const tabs = [
+    { id:'ack', label:'Accusé de réception' },
+    { id:'positive', label:'Réponse positive' },
+    { id:'negative', label:'Réponse négative' },
+  ];
+
+  const startEdit = () => {
+    // Strip HTML tags for textarea editing
+    const plain = templates[tab].replace(/<span class="response-var">/g,'').replace(/<\/span>/g,'');
+    setDraftText(plain);
+    setEditing(true);
+  };
+
+  const saveEdit = () => {
+    setTemplates(t => ({...t, [tab]: draftText}));
+    setEditing(false);
+  };
+
+  const HISTORY = [
+    { name:'Sophie Marchand', type:'Réponse positive', date:'29/04 08:42', sender:'mc.dupuis', ok:true },
+    { name:'Léa Fontaine', type:'Accusé de réception', date:'28/04 09:14', sender:'mc.dupuis', ok:true },
+    { name:'Amina Rousseau', type:'Accusé de réception', date:'25/04 11:03', sender:'système', ok:true },
+    { name:'Nicolas Petit', type:'Réponse négative', date:'25/04 11:03', sender:'système', ok:true },
+    { name:'Thomas Durand', type:'Accusé de réception', date:'26/04 14:22', sender:'r.martin', ok:true },
+    { name:'Karim Benali', type:'Accusé de réception', date:'27/04 10:55', sender:'système', ok:true },
+    { name:'Isabelle Garnier', type:'Réponse positive', date:'29/04 09:10', sender:'mc.dupuis', ok:true },
+    { name:'Moussa Diallo', type:'Accusé de réception', date:'29/04 09:12', sender:'système', ok:true },
+  ];
+
+  const visibleHistory = showAllHistory ? HISTORY : HISTORY.slice(0, 5);
+  const typeColor = { 'Réponse positive':'#1a7a42', 'Réponse négative':'#b03030', 'Accusé de réception':'#a06010' };
+  const typeBg = { 'Réponse positive':'#e6f6ef', 'Réponse négative':'#fceaea', 'Accusé de réception':'#fff8e6' };
+
+  return (
+    <div className="page fade-in">
+      <div className="two-col" style={{marginBottom:20}}>
+        {/* Template editor */}
+        <div className="card">
+          <div className="card-title" style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+            Modèles de réponse automatique
+            {!editing
+              ? <button className="btn btn-outline btn-sm" onClick={startEdit}>✏ Modifier</button>
+              : <div style={{display:'flex',gap:6}}>
+                  <button className="btn btn-outline btn-sm" onClick={() => setEditing(false)}>Annuler</button>
+                  <button className="btn btn-gold btn-sm" onClick={saveEdit}>✓ Enregistrer</button>
+                </div>
+            }
+          </div>
+          <div className="response-tabs">
+            {tabs.map(t => <div key={t.id} className={`response-tab ${tab===t.id?'active':''}`}
+              onClick={() => { setTab(t.id); setEditing(false); }}>{t.label}</div>)}
+          </div>
+
+          {editing ? (
+            <div>
+              <div style={{fontSize:11.5,color:'var(--c-gray)',marginBottom:8}}>
+                Utilisez <strong>[PRÉNOM NOM]</strong>, <strong>[INTITULÉ DU POSTE]</strong>, <strong>[DATE]</strong>, <strong>[NOM DU RECRUTEUR]</strong> comme variables dynamiques.
+              </div>
+              <textarea value={draftText} onChange={e => setDraftText(e.target.value)}
+                style={{width:'100%',minHeight:260,padding:'14px',fontSize:13,lineHeight:1.8,border:'1.5px solid var(--c-navy)',borderRadius:8,fontFamily:'inherit',color:'var(--c-black)',background:'var(--c-cream)',resize:'vertical',boxSizing:'border-box',outline:'none'}} />
+            </div>
+          ) : (
+            <div className="response-template" dangerouslySetInnerHTML={{__html: templates[tab]}}></div>
+          )}
+        </div>
+
+        {/* Rules */}
+        <div className="card">
+          <div className="card-title">Règles d'envoi automatique</div>
+          <div style={{display:'flex',flexDirection:'column',gap:10}}>
+            {[
+              { rule:'Score ≥ 80', action:'Réponse positive + invitation entretien', enabled:true },
+              { rule:'Tout dépôt de candidature', action:'Accusé de réception immédiat', enabled:true },
+              { rule:'Score < 50', action:'Réponse négative (J+3)', enabled:false },
+            ].map((r,i) => (
+              <div key={i} style={{display:'flex',alignItems:'center',gap:12,padding:'10px 12px',background:r.enabled ? 'rgba(26,122,66,0.06)' : 'var(--c-cream)',borderRadius:8,border:`1px solid ${r.enabled ? '#b8e8cc' : 'var(--c-silver)'}`}}>
+                <div style={{flex:1}}>
+                  <div style={{fontWeight:700,fontSize:12.5,color:r.enabled ? '#1a7a42' : 'var(--c-gray)'}}>{r.rule}</div>
+                  <div style={{fontSize:11.5,color:'var(--c-gray)'}}>→ {r.action}</div>
+                </div>
+                <div style={{fontSize:11,fontWeight:700,color:r.enabled ? '#1a7a42' : 'var(--c-gray)'}}>
+                  {r.enabled ? '● ACTIF' : '○ INACTIF'}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* History full width below */}
+      <div className="card">
+        <div className="card-title" style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
+          Historique des envois
+          <span style={{fontSize:12,color:'var(--c-gray)',fontWeight:500,textTransform:'none',letterSpacing:0}}>{HISTORY.length} messages envoyés</span>
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:'1.5fr 1.2fr 0.8fr 0.8fr 60px',gap:0}}>
+          {['Destinataire','Type de réponse','Envoyé par','Date','Statut'].map(h => (
+            <div key={h} style={{padding:'8px 12px',fontSize:'10.5px',fontWeight:700,color:'var(--c-gray)',textTransform:'uppercase',letterSpacing:'0.08em',borderBottom:'2px solid var(--c-silver)'}}>{h}</div>
+          ))}
+        </div>
+        {visibleHistory.map((e, i) => (
+          <div key={i} style={{display:'grid',gridTemplateColumns:'1.5fr 1.2fr 0.8fr 0.8fr 60px',borderBottom:'1px solid var(--c-silver)',background: i%2===0 ? 'transparent' : 'rgba(0,0,0,0.01)'}}>
+            <div style={{padding:'11px 12px',fontWeight:600,fontSize:13,color:'var(--c-black)',display:'flex',alignItems:'center'}}>{e.name}</div>
+            <div style={{padding:'11px 12px',display:'flex',alignItems:'center'}}>
+              <span style={{fontSize:11.5,fontWeight:700,padding:'2px 8px',borderRadius:20,background:typeBg[e.type],color:typeColor[e.type]}}>{e.type}</span>
+            </div>
+            <div style={{padding:'11px 12px',display:'flex',alignItems:'center',gap:6}}>
+              <div style={{width:22,height:22,borderRadius:'50%',background:'var(--c-navy)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:9,fontWeight:700,color:'white',flexShrink:0}}>
+                {e.sender === 'système' ? '⚙' : e.sender.slice(0,2).toUpperCase()}
+              </div>
+              <span style={{fontSize:12,color:'var(--c-black)'}}>{e.sender}</span>
+            </div>
+            <div style={{padding:'11px 12px',display:'flex',alignItems:'center',fontSize:12,color:'var(--c-slate-light)'}}>{e.date}</div>
+            <div style={{padding:'11px 12px',display:'flex',alignItems:'center'}}>
+              <span style={{fontSize:13,color:'#1a7a42',fontWeight:700}}>✓</span>
+            </div>
+          </div>
+        ))}
+
+        {!showAllHistory && HISTORY.length > 5 && (
+          <div style={{padding:'12px',textAlign:'center',borderTop:'1px solid var(--c-silver)'}}>
+            <button className="btn btn-outline btn-sm" onClick={() => setShowAllHistory(true)}>
+              Voir tout ({HISTORY.length - 5} de plus)
+            </button>
+          </div>
+        )}
+        {showAllHistory && (
+          <div style={{padding:'12px',textAlign:'center',borderTop:'1px solid var(--c-silver)'}}>
+            <button className="btn btn-ghost btn-sm" onClick={() => setShowAllHistory(false)}>Réduire ↑</button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── OFFRES PAGE ──────────────────────────────────────────────────────────────
+
+const OFFRES_DATA = [
+  {
+    id: 1, title: 'Responsable Développement Commercial', location: 'Paris, France · Hybride',
+    contract: 'CDI', experience: '5–8 ans', sector: 'Énergie / Services',
+    status: 'active', published: ['li', 'sc'], candidates: 47, new: 12,
+    created: '15/04/2026', deadline: '30/05/2026',
+    skills: ['Développement commercial', 'Management', 'CRM', 'Appels d\'offres B2B'],
+    description: 'Rattaché(e) à la Direction Commerciale, vous pilotez le développement du portefeuille clients sur la région Île-de-France.',
+  },
+  {
+    id: 2, title: 'Chargé(e) d\'affaires Île-de-France', location: 'Paris, France · Présentiel',
+    contract: 'CDI', experience: '3–5 ans', sector: 'Services B2B',
+    status: 'active', published: ['li', 'sc', 'edu'], candidates: 23, new: 5,
+    created: '20/04/2026', deadline: '15/05/2026',
+    skills: ['Prospection', 'Gestion clients', 'CRM', 'Reporting'],
+    description: 'Vous développez un portefeuille de clients PME/ETI sur la région parisienne et assurez le suivi commercial.',
+  },
+  {
+    id: 3, title: 'Ingénieur Commercial Grands Comptes', location: 'Abidjan, Côte d\'Ivoire · Hybride',
+    contract: 'CDI', experience: '4–6 ans', sector: 'Énergie / Logistique',
+    status: 'draft', published: [], candidates: 0, new: 0,
+    created: '28/04/2026', deadline: '31/05/2026',
+    skills: ['Grands comptes', 'Négociation B2B', 'Énergie', 'Afrique subsaharienne'],
+    description: 'Vous gérez et développez un portefeuille de clients grands comptes en Afrique de l\'Ouest, secteur énergie et logistique.',
+  },
+];
+
+
+const PLATFORMS = [
+  { id:'li', label:'LinkedIn', color:'#0A66C2',
+    logo: <svg viewBox="0 0 24 24" width="18" height="18" fill="white"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452z"/></svg>,
+    smLogo: <svg viewBox="0 0 24 24" width="12" height="12" fill="white"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452z"/></svg>,
+  },
+  { id:'sc', label:'Site AGL', color:'#143C64',
+    logo: <img src="uploads/AGL FINAL.png" alt="AGL" style={{width:18,height:18,objectFit:'contain'}} />,
+    smLogo: <img src="uploads/AGL FINAL.png" alt="AGL" style={{width:12,height:12,objectFit:'contain'}} />,
+  },
+  { id:'edu', label:'Educarrière', color:'#1a6b3c',
+    logo: <img src="uploads/logo.png" alt="Edu" style={{width:18,height:18,objectFit:'contain'}} />,
+    smLogo: <img src="uploads/logo.png" alt="Edu" style={{width:12,height:12,objectFit:'contain'}} />,
+  },
+];
+
+
+function OffresPage({ onNavigate, onOfferSelect }) {
+  const [offres, setOffres] = React.useState(OFFRES_DATA);
+  const [view, setView] = React.useState('list');
+  const [statusFilter, setStatusFilter] = React.useState('active'); // active | draft | closed
+  const [search, setSearch] = React.useState('');
+  const [filterSector, setFilterSector] = React.useState('');
+  const [filterContract, setFilterContract] = React.useState('');
+  const [publishModal, setPublishModal] = React.useState(null);
+  const [selectedChannels, setSelectedChannels] = React.useState([]);
+  const [publishing, setPublishing] = React.useState(false);
+  const [publishProgress, setPublishProgress] = React.useState(0);
+  const [publishDone, setPublishDone] = React.useState(false);
+  const [toast, setToast] = React.useState(null);
+  const [form, setForm] = React.useState({ title:'', location:'', contract:'CDI', experience:'', sector:'', description:'', skills:'' });
+
+  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3500); };
+
+  const allSectors = [...new Set(offres.map(o=>o.sector).filter(Boolean))];
+  const allContracts = [...new Set(offres.map(o=>o.contract).filter(Boolean))];
+
+  const filtered = offres.filter(o => {
+    if (o.status !== statusFilter) return false;
+    if (search && !o.title.toLowerCase().includes(search.toLowerCase()) && !o.location.toLowerCase().includes(search.toLowerCase())) return false;
+    if (filterSector && o.sector !== filterSector) return false;
+    if (filterContract && o.contract !== filterContract) return false;
+    return true;
+  });
+
+  const counts = { active: offres.filter(o=>o.status==='active').length, draft: offres.filter(o=>o.status==='draft').length, closed: offres.filter(o=>o.status==='closed').length };
+
+  const closeOffre = (id) => { setOffres(prev => prev.map(o => o.id===id ? {...o, status:'closed', published:[]} : o)); showToast('Offre clôturée et archivée.'); };
+  const reactivateOffre = (id) => { setOffres(prev => prev.map(o => o.id===id ? {...o, status:'active'} : o)); showToast('Offre réactivée avec succès !'); };
+
+  const openPublish = (o) => { setPublishModal(o); setSelectedChannels(o.published.length ? [...o.published] : []); setPublishDone(false); setPublishProgress(0); setPublishing(false); };
+
+  const doPublish = () => {
+    if (!selectedChannels.length) return;
+    setPublishing(true); setPublishProgress(0);
+    let prog = 0;
+    const iv = setInterval(() => {
+      prog += Math.random() * 15 + 8;
+      setPublishProgress(Math.min(100, prog));
+      if (prog >= 100) {
+        clearInterval(iv);
+        setOffres(prev => prev.map(o => o.id === publishModal.id ? {...o, published: selectedChannels, status:'active'} : o));
+        setPublishDone(true); setPublishing(false);
+      }
+    }, 100);
+  };
+
+  const closePublish = () => {
+    const wasDone = publishDone;
+    setPublishModal(null); setPublishDone(false);
+    if (wasDone) showToast('Offre publiée avec succès !');
+  };
+
+  const createOffre = () => {
+    const o = { id: Date.now(), ...form, status:'draft', published:[], candidates:0, new:0, created: new Date().toLocaleDateString('fr-FR'), deadline:'31/05/2026', skills: form.skills.split(',').map(s=>s.trim()).filter(Boolean) };
+    setOffres(prev => [...prev, o]);
+    setForm({ title:'', location:'', contract:'CDI', experience:'', sector:'', description:'', skills:'' });
+    setView('list'); setStatusFilter('draft'); showToast('Offre créée !');
+  };
+
+  if (view === 'create') return (
+    <div className="page fade-in" style={{background:'#F5F6FA'}}>
+      <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:20}}>
+        <button className="btn btn-ghost btn-sm" onClick={() => setView('list')}>← Retour</button>
+        <div style={{fontWeight:800,fontSize:18,color:'var(--c-navy)'}}>Nouvelle offre</div>
+      </div>
+      <div style={{display:'grid',gridTemplateColumns:'2fr 1fr',gap:16}}>
+        <div style={{background:'white',borderRadius:12,padding:24,border:'1px solid #eee',boxShadow:'0 1px 4px rgba(0,0,0,0.04)',display:'flex',flexDirection:'column',gap:14}}>
+          {[{label:'Intitulé du poste *',key:'title',ph:'Ex: Responsable Développement Commercial'},{label:'Localisation',key:'location',ph:"Ex: Abidjan · Hybride"},{label:'Secteur',key:'sector',ph:'Ex: Énergie / Logistique'},{label:'Expérience',key:'experience',ph:'Ex: 3–5 ans'}].map(f=>(
+            <div key={f.key}>
+              <label style={{fontSize:11.5,fontWeight:700,color:'var(--c-gray)',textTransform:'uppercase',letterSpacing:'0.06em',display:'block',marginBottom:5}}>{f.label}</label>
+              <input type="text" placeholder={f.ph} value={form[f.key]} onChange={e=>setForm(p=>({...p,[f.key]:e.target.value}))} />
+            </div>
+          ))}
+          <div>
+            <label style={{fontSize:11.5,fontWeight:700,color:'var(--c-gray)',textTransform:'uppercase',letterSpacing:'0.06em',display:'block',marginBottom:5}}>Contrat</label>
+            <select value={form.contract} onChange={e=>setForm(p=>({...p,contract:e.target.value}))} style={{width:'100%'}}>
+              {['CDI','CDD','Stage','Alternance','Freelance'].map(c=><option key={c}>{c}</option>)}
+            </select>
+          </div>
+          <div>
+            <label style={{fontSize:11.5,fontWeight:700,color:'var(--c-gray)',textTransform:'uppercase',letterSpacing:'0.06em',display:'block',marginBottom:5}}>Description</label>
+            <textarea placeholder="Missions, contexte, responsabilités…" value={form.description} onChange={e=>setForm(p=>({...p,description:e.target.value}))} style={{minHeight:90}} />
+          </div>
+          <div>
+            <label style={{fontSize:11.5,fontWeight:700,color:'var(--c-gray)',textTransform:'uppercase',letterSpacing:'0.06em',display:'block',marginBottom:5}}>Compétences <span style={{fontWeight:400,textTransform:'none'}}>(virgules)</span></label>
+            <input type="text" placeholder="CRM, Négociation B2B, Management" value={form.skills} onChange={e=>setForm(p=>({...p,skills:e.target.value}))} />
+          </div>
+        </div>
+        <div style={{display:'flex',flexDirection:'column',gap:12}}>
+          <div style={{background:'white',borderRadius:12,padding:20,border:'1px solid #eee',boxShadow:'0 1px 4px rgba(0,0,0,0.04)'}}>
+            <div style={{fontWeight:800,fontSize:13,color:'var(--c-navy)',marginBottom:12}}>Canaux disponibles</div>
+            <div style={{fontSize:12,color:'var(--c-gray)',marginBottom:10}}>Choisissez après création.</div>
+            {PLATFORMS.map(p=>(
+              <div key={p.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:8,border:'1.5px solid var(--c-silver)',marginBottom:8}}>
+                <div style={{width:32,height:32,borderRadius:8,background:p.color,display:'flex',alignItems:'center',justifyContent:'center'}}>{p.logo}</div>
+                <div style={{fontSize:12.5,fontWeight:600,color:'var(--c-black)'}}>{p.label}</div>
+              </div>
+            ))}
+          </div>
+          <button className="btn btn-gold" style={{justifyContent:'center',padding:14,fontSize:14}} onClick={createOffre} disabled={!form.title}>✓ Créer l'offre</button>
+          <button className="btn btn-outline" style={{justifyContent:'center'}} onClick={()=>setView('list')}>Annuler</button>
+        </div>
+      </div>
+      {toast && <div className="toast"><span className="toast-icon">✓</span>{toast}</div>}
+    </div>
+  );
+
+  return (
+    <div className="page fade-in" style={{background:'#F5F6FA'}}>
+      {/* Header */}
+      <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:16}}>
+        <div style={{flex:1}}>
+          <div style={{fontWeight:800,fontSize:18,color:'var(--c-navy)',letterSpacing:'-0.02em'}}>Offres de recrutement</div>
+          <div style={{fontSize:12.5,color:'var(--c-gray)',marginTop:2}}>
+            <strong style={{color:'var(--c-navy)'}}>{counts.active}</strong> actives · <strong style={{color:'var(--c-navy)'}}>{counts.draft}</strong> brouillon(s) · <strong style={{color:'var(--c-gray)'}}>{counts.closed}</strong> archivées
+          </div>
+        </div>
+        <button className="btn btn-gold" onClick={()=>setView('create')}>＋ Nouvelle offre</button>
+      </div>
+
+      {/* Filter bar */}
+      <div style={{background:'white',borderRadius:10,padding:'10px 16px',border:'1px solid #eee',marginBottom:14,display:'flex',gap:8,alignItems:'center',boxShadow:'0 1px 4px rgba(0,0,0,0.04)'}}>
+        {/* Status tabs */}
+        <div style={{display:'flex',gap:0,border:'1.5px solid var(--c-silver)',borderRadius:7,overflow:'hidden',flexShrink:0}}>
+          {[{id:'active',label:`Actives (${counts.active})`},{id:'draft',label:`Brouillons (${counts.draft})`},{id:'closed',label:`Archivées (${counts.closed})`}].map(t=>(
+            <div key={t.id} onClick={()=>setStatusFilter(t.id)}
+              style={{padding:'6px 14px',fontSize:12,fontWeight:700,cursor:'pointer',whiteSpace:'nowrap',
+                background:statusFilter===t.id?'var(--c-navy)':'white',
+                color:statusFilter===t.id?'white':'var(--c-gray)',transition:'all 0.15s'}}>
+              {t.label}
+            </div>
+          ))}
+        </div>
+        <div style={{width:1,height:24,background:'var(--c-silver)',flexShrink:0}}></div>
+        <input type="text" placeholder="Rechercher une offre…" value={search} onChange={e=>setSearch(e.target.value)}
+          style={{flex:'1 1 140px',minWidth:0,padding:'6px 10px',border:'1.5px solid var(--c-silver)',borderRadius:7,fontSize:12.5,fontFamily:'inherit',outline:'none'}} />
+        <select value={filterSector} onChange={e=>setFilterSector(e.target.value)}
+          style={{flex:'1 1 120px',minWidth:0,padding:'6px 8px',border:'1.5px solid var(--c-silver)',borderRadius:7,fontSize:12.5,fontFamily:'inherit',color:'var(--c-black)',background:'white',outline:'none',cursor:'pointer'}}>
+          <option value="">Tous secteurs</option>
+          {allSectors.map(s=><option key={s} value={s}>{s}</option>)}
+        </select>
+        <select value={filterContract} onChange={e=>setFilterContract(e.target.value)}
+          style={{flex:'1 1 100px',minWidth:0,padding:'6px 8px',border:'1.5px solid var(--c-silver)',borderRadius:7,fontSize:12.5,fontFamily:'inherit',color:'var(--c-black)',background:'white',outline:'none',cursor:'pointer'}}>
+          <option value="">Tous contrats</option>
+          {allContracts.map(c=><option key={c} value={c}>{c}</option>)}
+        </select>
+        {(search||filterSector||filterContract) && (
+          <button className="btn btn-ghost btn-sm" style={{flexShrink:0,whiteSpace:'nowrap'}} onClick={()=>{setSearch('');setFilterSector('');setFilterContract('');}}>✕</button>
+        )}
+        <div style={{fontSize:12,color:'var(--c-gray)',flexShrink:0,whiteSpace:'nowrap',marginLeft:4}}>
+          <strong style={{color:'var(--c-navy)'}}>{filtered.length}</strong> résultat{filtered.length>1?'s':''}
+        </div>
+      </div>
+
+      {/* Offer list */}
+      <div style={{display:'flex',flexDirection:'column',gap:12}}>
+        {filtered.length === 0 && (
+          <div style={{textAlign:'center',padding:'48px 20px',color:'var(--c-gray)',background:'white',borderRadius:12,border:'1px solid #eee'}}>
+            <div style={{fontSize:32,marginBottom:8}}>📋</div>
+            <div style={{fontWeight:600,fontSize:14}}>Aucune offre dans cette catégorie</div>
+          </div>
+        )}
+        {filtered.map(o => (
+          <div key={o.id} style={{background:'white',borderRadius:12,border:`1.5px solid ${o.status==='closed'?'#ddd':o.status==='draft'?'#e8d8b0':'#eee'}`,boxShadow:'0 1px 4px rgba(0,0,0,0.04)',overflow:'hidden',opacity:o.status==='closed'?0.75:1,transition:'opacity 0.2s'}}>
+            <div style={{padding:'16px 22px',display:'flex',alignItems:'center',gap:16}}>
+              <div style={{flex:1}}>
+                <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:5}}>
+                  <div style={{fontWeight:800,fontSize:15,color:o.status==='closed'?'var(--c-gray)':'var(--c-navy)'}}>{o.title}</div>
+                  <span style={{fontSize:11,fontWeight:700,padding:'2px 9px',borderRadius:20,
+                    background:o.status==='active'?'#e6f6ef':o.status==='draft'?'#fff8e6':'#f0f0f0',
+                    color:o.status==='active'?'#1a7a42':o.status==='draft'?'#a06010':'var(--c-gray)'}}>
+                    {o.status==='active'?'● Active':o.status==='draft'?'◎ Brouillon':'✕ Archivée'}
+                  </span>
+                </div>
+                <div style={{display:'flex',gap:12,fontSize:12,color:'var(--c-gray)',flexWrap:'wrap'}}>
+                  <span>📍 {o.location}</span><span>📋 {o.contract} · {o.experience}</span><span>🏭 {o.sector}</span><span>📅 {o.created}</span>
+                </div>
+              </div>
+              <div style={{display:'flex',gap:16,flexShrink:0}}>
+                {o.candidates > 0 && <div style={{textAlign:'center'}}>
+                  <div style={{fontSize:26,fontWeight:900,color:'var(--c-navy)',lineHeight:1}}>{o.candidates}</div>
+                  <div style={{fontSize:10,color:'var(--c-gray)',fontWeight:700,textTransform:'uppercase',marginTop:2}}>Candidats</div>
+                </div>}
+                {o.new > 0 && <div style={{textAlign:'center'}}>
+                  <div style={{fontSize:26,fontWeight:900,color:'#1a7a42',lineHeight:1}}>{o.new}</div>
+                  <div style={{fontSize:10,color:'#1a7a42',fontWeight:700,textTransform:'uppercase',marginTop:2}}>Nouveaux</div>
+                </div>}
+              </div>
+              <div style={{display:'flex',gap:8,flexShrink:0}}>
+                {o.status === 'closed' ? (
+                  <button className="btn btn-outline btn-sm" style={{color:'#1a7a42',borderColor:'#b8e8cc'}} onClick={()=>reactivateOffre(o.id)}>↺ Réactiver</button>
+                ) : (
+                  <>
+                    {o.candidates > 0 && <button className="btn btn-primary btn-sm" onClick={()=>{onOfferSelect(o);onNavigate('candidates');}}>Voir candidats →</button>}
+                    {o.status !== 'closed' && <button className="btn btn-gold btn-sm" onClick={()=>openPublish(o)}>📡 Publier</button>}
+                    <button className="btn btn-ghost btn-sm" style={{color:'#b03030',fontSize:11}} onClick={()=>closeOffre(o.id)}>Clôturer</button>
+                  </>
+                )}
+              </div>
+            </div>
+            {o.published.length > 0 && o.status !== 'closed' && (
+              <div style={{padding:'8px 22px',background:'#F5F6FA',borderTop:'1px solid #eee',display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
+                <div style={{fontSize:11,color:'var(--c-gray)',fontWeight:700}}>Publié sur :</div>
+                {o.published.map(pid=>{const p=PLATFORMS.find(x=>x.id===pid);return p?<div key={pid} style={{display:'flex',alignItems:'center',gap:5,padding:'3px 10px',borderRadius:20,background:p.color,fontSize:11.5,fontWeight:700,color:'white'}}><div style={{width:14,height:14,display:'flex',alignItems:'center',justifyContent:'center'}}>{p.smLogo}</div>{p.label}</div>:null;})}
+                <div style={{flex:1}}></div>
+                {(o.skills||[]).slice(0,3).map(s=><span key={s} className="tag" style={{fontSize:10.5}}>{s}</span>)}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Publish Modal */}
+      {publishModal && (
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.45)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:500}} onClick={!publishing?closePublish:undefined}>
+          <div className="card fade-in" style={{width:480,borderRadius:14,boxShadow:'0 16px 48px rgba(0,0,0,0.2)',padding:28}} onClick={e=>e.stopPropagation()}>
+            {!publishDone ? (
+              <>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
+                  <div style={{fontWeight:800,fontSize:16,color:'var(--c-navy)'}}>Choisir les canaux</div>
+                  {!publishing && <button className="btn btn-ghost btn-sm" onClick={closePublish}>✕</button>}
+                </div>
+                <div style={{fontSize:12.5,color:'var(--c-gray)',marginBottom:18}}>{publishModal.title}</div>
+                <div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:20}}>
+                  {PLATFORMS.map(p=>{const checked=selectedChannels.includes(p.id);return(
+                    <div key={p.id} onClick={()=>!publishing&&setSelectedChannels(prev=>checked?prev.filter(x=>x!==p.id):[...prev,p.id])}
+                      style={{display:'flex',alignItems:'center',gap:14,padding:'14px 16px',borderRadius:10,border:`2px solid ${checked?p.color:'var(--c-silver)'}`,background:checked?p.color+'18':'white',cursor:publishing?'default':'pointer',transition:'all 0.2s'}}>
+                      <div style={{width:40,height:40,borderRadius:10,background:p.color,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>{p.logo}</div>
+                      <div style={{flex:1}}>
+                        <div style={{fontWeight:700,fontSize:14,color:'var(--c-black)'}}>{p.label}</div>
+                        <div style={{fontSize:11.5,color:'var(--c-gray)',marginTop:2}}>{p.id==='li'?'API LinkedIn Talent Solutions':p.id==='sc'?'Webhook site carrière AGL':'Portail Educarrière.ci'}</div>
+                      </div>
+                      <div style={{width:22,height:22,borderRadius:'50%',border:`2.5px solid ${checked?p.color:'var(--c-silver)'}`,background:checked?p.color:'white',display:'flex',alignItems:'center',justifyContent:'center',transition:'all 0.2s',flexShrink:0}}>
+                        {checked&&<span style={{color:'white',fontSize:12,fontWeight:700}}>✓</span>}
+                      </div>
+                    </div>
+                  );})}
+                </div>
+                {publishing && (
+                  <div style={{marginBottom:16}}>
+                    <div style={{display:'flex',justifyContent:'space-between',fontSize:12,color:'var(--c-gray)',marginBottom:6}}><span>Publication en cours…</span><span>{Math.round(publishProgress)}%</span></div>
+                    <div style={{height:8,background:'var(--c-silver)',borderRadius:4,overflow:'hidden'}}>
+                      <div style={{height:'100%',background:'var(--c-navy)',borderRadius:4,width:`${publishProgress}%`,transition:'width 0.1s'}}></div>
+                    </div>
+                  </div>
+                )}
+                <div style={{display:'flex',gap:8,justifyContent:'flex-end'}}>
+                  {!publishing&&<button className="btn btn-outline" onClick={closePublish}>Annuler</button>}
+                  <button className="btn btn-gold" disabled={!selectedChannels.length||publishing} onClick={doPublish} style={{opacity:!selectedChannels.length||publishing?0.5:1}}>
+                    {publishing?'Publication…':`Publier sur ${selectedChannels.length} canal${selectedChannels.length>1?'x':''}`}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div style={{textAlign:'center',padding:'20px 0'}}>
+                <div style={{fontSize:48,marginBottom:12}}>🎉</div>
+                <div style={{fontWeight:800,fontSize:18,color:'var(--c-navy)',marginBottom:8}}>Offre publiée !</div>
+                <div style={{fontSize:13,color:'var(--c-gray)',marginBottom:16}}><strong>{publishModal.title}</strong> est visible sur :</div>
+                <div style={{display:'flex',gap:8,justifyContent:'center',marginBottom:20}}>
+                  {selectedChannels.map(pid=>{const p=PLATFORMS.find(x=>x.id===pid);return p?<div key={pid} style={{display:'flex',alignItems:'center',gap:6,padding:'7px 14px',borderRadius:20,background:p.color,color:'white',fontSize:13,fontWeight:700}}><div style={{width:16,height:16,display:'flex',alignItems:'center',justifyContent:'center'}}>{p.smLogo}</div>{p.label}</div>:null;})}
+                </div>
+                <button className="btn btn-primary" onClick={closePublish} style={{width:'100%',justifyContent:'center'}}>Fermer</button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+      {toast && <div className="toast"><span className="toast-icon">✓</span>{toast}</div>}
+    </div>
+  );
+}
+
+
+// ── APP ───────────────────────────────────────────────────────────────────────
+
+const NAV = [
+  { id:'dashboard', label:'Tableau de bord', icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg> },
+  { id:'offres', label:'Offres', icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><rect x="1" y="3" width="14" height="11" rx="2"/><path d="M1 7h14M5 3V1M11 3V1"/></svg>, badge:'3' },
+  { id:'candidates', label:'Candidatures', icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><circle cx="6" cy="5" r="3"/><path d="M0 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M11 2v6M8 5h6" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round"/></svg>, badge: '47' },
+  { id:'linkedin', label:'Intégrations plateformes', icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><circle cx="12" cy="4" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="4" cy="8" r="2"/><path d="M6 7l4-2M6 9l4 2"/></svg> },
+  { id:'ingestion', label:'Importer un CV', icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><rect x="2" y="1" width="12" height="14" rx="2" fill="none" stroke="currentColor" strokeWidth="1.5"/><path d="M5 5h6M5 8h6M5 11h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg> },
+  { id:'pool', label:'Base de talents', icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><circle cx="5" cy="5" r="2.5"/><circle cx="11" cy="5" r="2.5"/><path d="M0 14c0-2.8 2.2-5 5-5M16 14c0-2.8-2.2-5-5-5M8 14c0-2.2 1.8-4 4-4s4 1.8 4 4" fill="none" stroke="currentColor" strokeWidth="1.3"/></svg> },
+  { id:'responses', label:'Réponses auto', icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="3" width="14" height="10" rx="2" fill="none" stroke="currentColor" strokeWidth="1.5"/><path d="M1 5l7 5 7-5" stroke="currentColor" strokeWidth="1.5" fill="none"/></svg> },
+];
+
+const PAGE_TITLES = {
+  offres: 'Offres de recrutement',
+  dashboard: 'Tableau de bord',
+  candidates: 'Candidatures',
+  ingestion: 'Import & Analyse de CV',
+  linkedin: 'Intégrations plateformes',
+  pool: 'Base de talents',
+  responses: 'Réponses automatiques',
+};
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "accentColor": "#fe9239",
+  "sidebarDark": true,
+  "showScores": true,
+  "jobTitle": "Responsable Développement Commercial"
+}/*EDITMODE-END*/;
+
+function App() {
+  const [tweaks, setTweak] = window.useTweaks(TWEAK_DEFAULTS);
+  const { TweaksPanel, TweakColor, TweakToggle, TweakSection, TweakText } = window;
+  const [page, setPage] = useState('dashboard');
+  const [user, setUser] = useState(null);
+  const [talentPool, setTalentPool] = useState([
+    { id:101, name:'Clara Vidal', initials:'CV', color:'#a06010', score:58, title:'Commerciale Terrain', experience:3, location:'Neuilly', skills:['Prospection','CRM'], sourceType:'jb' },
+    { id:102, name:'Hugo Martin', initials:'HM', color:'#2a5d8c', score:76, title:'Responsable Comptes Clés', experience:5, location:'Paris', skills:['Grands comptes','B2B'], sourceType:'li' },
+  ]);
+
+  const [candidates, setCandidates] = useState(CANDIDATES);
+  const [activeOffer, setActiveOffer] = useState(null);
+  const addCandidate = (cand) => setCandidates(prev => prev.find(c => c.id === cand.id) ? prev : [...prev, cand]);
+
+  const addToPool = (cand) => {
+    setTalentPool(pool => pool.find(c => c.id === cand.id) ? pool : [...pool, cand]);
+  };
+
+  if (!user) return <LoginPage onLogin={setUser} />;
+
+  return (
+    <div className="app">
+      <aside className="sidebar" style={{background: tweaks.sidebarDark ? 'var(--c-navy)' : '#1c2d40'}}>
+        <div className="sidebar-logo" style={{textAlign:'center'}}>
+          <img src="uploads/AGL FINAL.png" alt="AGL" style={{width:'160px',marginBottom:8}} />
+          <div className="logo-sub" style={{marginTop:4}}>Traitement intelligent des candidatures</div>
+        </div>
+
+        <nav className="sidebar-nav">
+          <div className="nav-section-label">Navigation</div>
+          {NAV.map(n => (
+            <div key={n.id} className={`nav-item ${page===n.id?'active':''}`}
+              onClick={() => setPage(n.id)}>
+              {n.icon}
+              {n.label}
+              {n.badge && tweaks.showScores && <span className="nav-badge">{n.badge}</span>}
+            </div>
+          ))}
+        </nav>
+
+        <div className="sidebar-job">
+          <div className="job-label">Offre active</div>
+          <div className="job-title">{tweaks.jobTitle}</div>
+          <div className="job-meta">Paris · CDI · 5–8 ans exp.</div>
+        </div>
+      </aside>
+
+      <div className="main">
+        <header className="topbar">
+          <div style={{flex:1}}>
+            <div className="topbar-title">{PAGE_TITLES[page]}</div>
+          </div>
+          <div style={{display:'flex',alignItems:'center',gap:12}}>
+            <UserMenu user={user} onLogout={() => setUser(null)} />
+          </div>
+        </header>
+
+        {page === 'offres' && <OffresPage onNavigate={setPage} onOfferSelect={setActiveOffer} />}
+        {page === 'dashboard' && <Dashboard onNavigate={setPage} />}
+        {page === 'candidates' && <CandidatesPage candidates={candidates} tweaks={tweaks} addToPool={addToPool} talentPool={talentPool} activeOffer={activeOffer} onClearOffer={() => setActiveOffer(null)} />}
+        {page === 'ingestion' && <IngestionPage onNavigate={setPage} onCandidateImported={addCandidate} />}
+        {page === 'linkedin' && <IntegrationsPage />}
+        {page === 'pool' && <TalentPoolPage pool={talentPool} />}
+        {page === 'responses' && <ResponsesPage />}
+      </div>
+
+      <TweaksPanel>
+        <TweakSection label="Apparence">
+          <TweakColor id="accentColor" label="Couleur d'accent" value={tweaks.accentColor} onChange={v => { setTweak('accentColor', v); document.documentElement.style.setProperty('--c-gold', v); }} />
+          <TweakToggle id="sidebarDark" label="Sidebar sombre" value={tweaks.sidebarDark} onChange={v => setTweak('sidebarDark', v)} />
+          <TweakToggle id="showScores" label="Afficher les compteurs" value={tweaks.showScores} onChange={v => setTweak('showScores', v)} />
+        </TweakSection>
+        <TweakSection label="Contenu">
+          <TweakText id="jobTitle" label="Intitulé du poste" value={tweaks.jobTitle} onChange={v => setTweak('jobTitle', v)} />
+        </TweakSection>
+      </TweaksPanel>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
