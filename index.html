@@ -393,168 +393,168 @@ const { useState, useEffect, useRef } = React;
 // ── DATA ──────────────────────────────────────────────────────────────────────
 
 const JOB_OFFER = {
-  title: "Responsable Développement Commercial",
-  location: "Paris, France · Hybride",
+  title: "Chef d'exploitation Terminal à Conteneurs",
+  location: "Abidjan, Côte d'Ivoire · Présentiel",
   contract: "CDI",
   experience: "5–8 ans",
-  sector: "Energie / Services",
-  skills: ["Développement commercial", "Gestion de portefeuille clients", "Appels d'offres B2B", "CRM", "Management d'équipe"],
-  description: `Rattaché(e) à la Direction Commerciale, vous pilotez le développement du portefeuille clients sur la région Île-de-France. Vous gérez les cycles de vente complets, de la prospection à la signature, et animez une équipe de 3 commerciaux terrain.`,
+  sector: "Logistique portuaire / Maritime",
+  skills: ["Exploitation portuaire", "Gestion de terminal", "Supply chain", "Management d'équipe", "Réglementation douanière"],
+  description: `Rattaché(e) à la Direction des Opérations du terminal d'Abidjan, vous pilotez l'exploitation du parc à conteneurs et coordonnez les opérations de manutention. Vous encadrez une équipe de 25 agents et assurez le respect des délais d'escale et des normes ISPS.`,
 };
 
 const CANDIDATES = [
   {
-    id: 1, name: "Sophie Marchand", initials: "SM", color: "#143C64",
-    score: 91, status: "Top profil",
+    id: 1, name: "Aya Konaté", initials: "AK", color: "#143C64",
+    score: 93, status: "Top profil",
     source: "LinkedIn", sourceType: "li",
-    title: "Directrice Commerciale Régionale", experience: 8,
-    location: "Paris", email: "s.marchand@email.fr",
-    skills: ["Développement commercial", "Management d'équipe", "CRM Salesforce", "Appels d'offres B2B", "Gestion budgétaire"],
-    education: "Master Commerce International – ESCP Business School",
-    languages: ["Français (natif)", "Anglais (C1)", "Espagnol (B2)"],
-    received: "2026-04-28",
-    matchCriteria: { experience: 95, competences: 88, secteur: 82, formation: 90, localisation: 100 },
-    excerpt: "8 ans d'expérience en développement commercial B2B dans l'énergie. A géré un portefeuille de +120 clients grands comptes. Ancienne Directrice chez TotalEnergies.",
+    title: "Directrice des Opérations Portuaires", experience: 9,
+    location: "Abidjan, Côte d'Ivoire", email: "a.konate@email.ci",
+    skills: ["Exploitation portuaire", "Management d'équipe", "Gestion de terminal", "Normes ISPS", "Supply chain"],
+    education: "Master Transport & Logistique – ISTL Abidjan",
+    languages: ["Français (natif)", "Anglais (C1)", "Dioula (natif)"],
+    received: "2026-04-29",
+    matchCriteria: { experience: 95, competences: 92, secteur: 96, formation: 88, localisation: 100 },
+    excerpt: "9 ans d'expérience en opérations portuaires à Abidjan et San Pedro. A dirigé l'exploitation d'un terminal de 350 000 EVP/an. Ancienne responsable chez Bolloré Transport & Logistics.",
     responded: false,
   },
   {
-    id: 10, name: "Aya Konaté", initials: "AK", color: "#c0392b",
-    score: 85, status: "Top profil",
+    id: 10, name: "Kouamé N'Guessan", initials: "KN", color: "#c0392b",
+    score: 89, status: "Top profil",
     source: "LinkedIn", sourceType: "li",
-    title: "Directrice Commerciale Afrique de l'Ouest", experience: 8,
-    location: "Abidjan, Côte d'Ivoire", email: "a.konate@email.ci",
-    skills: ["Développement commercial", "Management d'équipe", "Appels d'offres B2B", "CRM", "Marchés émergents"],
-    education: "Master Commerce International – Université Félix Houphouët-Boigny",
-    languages: ["Français (natif)", "Anglais (C1)", "Dioula (natif)", "Baoulé (B2)"],
+    title: "Chef d'exploitation Maritime", experience: 8,
+    location: "Lomé, Togo", email: "k.nguessan@email.tg",
+    skills: ["Exploitation maritime", "Gestion de flotte", "Transit", "Réglementation douanière", "QHSE"],
+    education: "Ingénieur Logistique – ENSET Lomé + MBA Maritime",
+    languages: ["Français (natif)", "Anglais (C1)", "Éwé (natif)"],
     received: "2026-04-29",
-    matchCriteria: { experience: 88, competences: 90, secteur: 92, formation: 82, localisation: 70 },
-    excerpt: "8 ans à la tête de la direction commerciale d'un groupe panafricain de services aux entreprises. A développé un portefeuille de +200 clients en Afrique subsaharienne.",
+    matchCriteria: { experience: 90, competences: 88, secteur: 94, formation: 85, localisation: 85 },
+    excerpt: "8 ans en exploitation maritime au Port Autonome de Lomé. Expert en gestion de conteneurs reefer et matières dangereuses. Certification ISPS et Code ISM.",
     responded: false,
   },
   {
     id: 11, name: "Seydou Traoré", initials: "ST", color: "#1a6b3c",
-    score: 78, status: "Pertinent",
-    source: "Educarrière", sourceType: "jb",
-    title: "Responsable Grands Comptes – Afrique", experience: 6,
+    score: 82, status: "Top profil",
+    source: "Novojob", sourceType: "jb",
+    title: "Responsable Transit & Douane", experience: 7,
     location: "Dakar, Sénégal", email: "s.traore@email.sn",
-    skills: ["Grands comptes", "Négociation B2B", "Logistique", "CRM Salesforce", "Secteur énergie"],
-    education: "MBA Management – École Supérieure de Commerce de Dakar",
+    skills: ["Transit international", "Réglementation douanière UEMOA", "Incoterms", "Supply chain", "Gestion d'entrepôt"],
+    education: "MBA Supply Chain – ISM Dakar",
     languages: ["Français (natif)", "Anglais (B2)", "Wolof (natif)", "Bambara (B1)"],
     received: "2026-04-29",
-    matchCriteria: { experience: 75, competences: 80, secteur: 88, formation: 78, localisation: 65 },
-    excerpt: "6 ans en gestion de comptes stratégiques dans le secteur de l'énergie en Afrique de l'Ouest. Expérience sur les appels d'offres internationaux et les partenariats public-privé.",
+    matchCriteria: { experience: 80, competences: 85, secteur: 90, formation: 82, localisation: 78 },
+    excerpt: "7 ans en transit et opérations douanières au Port de Dakar. A réduit les délais de dédouanement de 40% via la digitalisation des procédures SYDONIA.",
     responded: false,
   },
   {
-    id: 2, name: "Karim Benali", initials: "KB", color: "#64788C",
-    score: 84, status: "Très pertinent",
+    id: 2, name: "Fatou Diagne", initials: "FD", color: "#64788C",
+    score: 84, status: "Top profil",
     source: "Site carrière", sourceType: "sc",
-    title: "Responsable Grands Comptes", experience: 6,
-    location: "Boulogne-Billancourt", email: "k.benali@email.fr",
-    skills: ["Négociation B2B", "Appels d'offres", "CRM HubSpot", "Gestion d'équipe", "Reporting commercial"],
-    education: "École de Commerce de Paris – Spécialisation Ventes",
-    languages: ["Français (natif)", "Anglais (B2)"],
-    received: "2026-04-27",
-    matchCriteria: { experience: 80, competences: 85, secteur: 75, formation: 88, localisation: 95 },
-    excerpt: "Responsable Grands Comptes depuis 6 ans, spécialisé dans les services aux entreprises. A développé un portefeuille de 80 clients avec une croissance annuelle de +18%.",
+    title: "Responsable Supply Chain Afrique de l'Ouest", experience: 7,
+    location: "Abidjan, Côte d'Ivoire", email: "f.diagne@email.ci",
+    skills: ["Supply chain management", "Gestion de flotte", "Optimisation logistique", "SAP TM", "Management"],
+    education: "Master Logistique Internationale – Université Senghor Alexandrie",
+    languages: ["Français (natif)", "Anglais (B2)", "Wolof (natif)"],
+    received: "2026-04-28",
+    matchCriteria: { experience: 82, competences: 86, secteur: 88, formation: 90, localisation: 95 },
+    excerpt: "7 ans en supply chain dans le secteur logistique. A optimisé les flux conteneurs sur le corridor Abidjan-Ouagadougou, réduisant les coûts de transport de 22%.",
     responded: false,
   },
   {
-    id: 3, name: "Léa Fontaine", initials: "LF", color: "#F0B450",
+    id: 3, name: "Jean-Marc Ebouélé", initials: "JE", color: "#F0B450",
     score: 79, status: "Pertinent",
     source: "LinkedIn", sourceType: "li",
-    title: "Business Developer Senior", experience: 5,
-    location: "Paris", email: "lea.fontaine@email.fr",
-    skills: ["Business development", "Prospection", "CRM", "Présentations clients", "Secteur BtoB"],
-    education: "Master Marketing & Ventes – Université Paris-Dauphine",
-    languages: ["Français (natif)", "Anglais (C2)"],
+    title: "Chef de parc conteneurs", experience: 6,
+    location: "Douala, Cameroun", email: "jm.eboule@email.cm",
+    skills: ["Gestion de parc", "Manutention portuaire", "Planification", "QHSE", "Logistique"],
+    education: "DUT Logistique – IUT Douala + Certification APICS",
+    languages: ["Français (natif)", "Anglais (B2)", "Douala (natif)"],
     received: "2026-04-27",
-    matchCriteria: { experience: 70, competences: 82, secteur: 68, formation: 85, localisation: 100 },
-    excerpt: "5 ans en business development, principalement dans le domaine des services numériques. Souhaite évoluer vers un secteur industriel/énergie.",
+    matchCriteria: { experience: 75, competences: 80, secteur: 85, formation: 72, localisation: 70 },
+    excerpt: "6 ans de gestion de parc à conteneurs au Port de Douala. Maîtrise des systèmes TOS (Navis N4) et de la planification navire.",
     responded: true,
   },
   {
-    id: 4, name: "Thomas Durand", initials: "TD", color: "#8CA0B4",
-    score: 72, status: "À évaluer",
-    source: "Educarrière", sourceType: "jb",
-    title: "Ingénieur Commercial", experience: 4,
-    location: "Versailles", email: "t.durand@email.fr",
-    skills: ["Ventes B2B", "Prospection terrain", "Technique industrielle", "CRM", "Appels d'offres"],
-    education: "École d'ingénieurs (INSA Lyon) + MBA Grenoble École de Management",
-    languages: ["Français (natif)", "Anglais (B1)", "Allemand (A2)"],
+    id: 4, name: "Moussa Camara", initials: "MC", color: "#8CA0B4",
+    score: 74, status: "Pertinent",
+    source: "Emploi.ci", sourceType: "jb",
+    title: "Agent de transit principal", experience: 5,
+    location: "Conakry, Guinée", email: "m.camara@email.gn",
+    skills: ["Transit maritime", "Dédouanement", "Documentation export", "Incoterms", "Transport multimodal"],
+    education: "Licence Transport Logistique – Université de Conakry",
+    languages: ["Français (natif)", "Anglais (B1)", "Soussou (natif)", "Malinké (B2)"],
+    received: "2026-04-27",
+    matchCriteria: { experience: 65, competences: 78, secteur: 82, formation: 68, localisation: 65 },
+    excerpt: "5 ans en transit maritime et dédouanement au Port de Conakry. Connaissance approfondie des procédures SYDONIA et du guichet unique.",
+    responded: false,
+  },
+  {
+    id: 5, name: "Aminata Touré", initials: "AT", color: "#2a9d5c",
+    score: 68, status: "À évaluer",
+    source: "Site carrière", sourceType: "sc",
+    title: "Coordinatrice logistique", experience: 4,
+    location: "Abidjan, Côte d'Ivoire", email: "a.toure@email.ci",
+    skills: ["Coordination logistique", "Gestion de stock", "SAP", "Transport routier", "Documentation"],
+    education: "BTS Logistique & Transport – Groupe LOKO Abidjan",
+    languages: ["Français (natif)", "Anglais (B1)", "Baoulé (natif)"],
     received: "2026-04-26",
-    matchCriteria: { experience: 60, competences: 75, secteur: 80, formation: 78, localisation: 85 },
-    excerpt: "4 ans comme Ingénieur Commercial dans l'industrie. Profil technique fort avec une bonne maîtrise des cycles de vente complexes.",
-    responded: false,
+    matchCriteria: { experience: 55, competences: 70, secteur: 72, formation: 65, localisation: 100 },
+    excerpt: "4 ans en coordination logistique chez un transitaire à Abidjan. Profil opérationnel solide, en montée en compétences sur les opérations portuaires.",
+    responded: true,
   },
   {
-    id: 5, name: "Amina Rousseau", initials: "AR", color: "#2a9d5c",
-    score: 65, status: "Potentiel",
-    source: "Site carrière", sourceType: "sc",
-    title: "Chargée de Développement Commercial", experience: 3,
-    location: "Paris", email: "a.rousseau@email.fr",
-    skills: ["Prospection", "CRM Salesforce", "Gestion clients", "Marketing B2B"],
-    education: "Licence Professionnelle Commerce – Paris Est",
-    languages: ["Français (natif)", "Anglais (B1)"],
+    id: 6, name: "Patrick Mensah", initials: "PM", color: "#787878",
+    score: 42, status: "Non retenu",
+    source: "Emploi.ci", sourceType: "jb",
+    title: "Magasinier", experience: 2,
+    location: "Tema, Ghana", email: "p.mensah@email.gh",
+    skills: ["Gestion de stock", "Manutention", "Inventaire"],
+    education: "Certificat professionnel – Tema Port Training Centre",
+    languages: ["Anglais (natif)", "Français (A2)", "Twi (natif)"],
     received: "2026-04-25",
-    matchCriteria: { experience: 45, competences: 68, secteur: 55, formation: 65, localisation: 100 },
-    excerpt: "3 ans d'expérience dans une PME spécialisée en services RH. Profil junior mais motivé avec de bons résultats sur les objectifs de prospection.",
+    matchCriteria: { experience: 25, competences: 38, secteur: 45, formation: 35, localisation: 60 },
+    excerpt: "2 ans comme magasinier au Port de Tema. Expérience limitée en exploitation portuaire, profil trop junior pour le poste visé.",
     responded: true,
   },
   {
-    id: 6, name: "Nicolas Petit", initials: "NP", color: "#787878",
-    score: 41, status: "Non retenu",
-    source: "Educarrière", sourceType: "jb",
-    title: "Commercial Terrain", experience: 2,
-    location: "Lyon", email: "n.petit@email.fr",
-    skills: ["Vente B2C", "Démarchage", "Téléprospection"],
-    education: "BTS Négociation et Digitalisation de la Relation Client",
-    languages: ["Français (natif)"],
-    received: "2026-04-24",
-    matchCriteria: { experience: 25, competences: 40, secteur: 38, formation: 42, localisation: 30 },
-    excerpt: "2 ans d'expérience dans la vente B2C (téléphonie). Secteur et niveau d'expérience insuffisants au regard du poste.",
-    responded: true,
-  },
-  {
-    id: 7, name: "Isabelle Garnier", initials: "IG", color: "#5a3e8c",
-    score: 88, status: "Top profil",
+    id: 7, name: "Oumar Bah", initials: "OB", color: "#5a3e8c",
+    score: 87, status: "Top profil",
     source: "LinkedIn", sourceType: "li",
-    title: "Directrice des Ventes", experience: 9,
-    location: "Paris", email: "i.garnier@email.fr",
-    skills: ["Stratégie commerciale", "Key Account Management", "CRM Salesforce", "Management", "B2B"],
-    education: "MBA – HEC Paris",
-    languages: ["Français (natif)", "Anglais (C2)", "Portugais (B1)"],
+    title: "Directeur des opérations logistiques", experience: 10,
+    location: "Abidjan, Côte d'Ivoire", email: "o.bah@email.ci",
+    skills: ["Direction opérationnelle", "Exploitation portuaire", "Management", "Supply chain", "QHSE", "Budget"],
+    education: "MBA Maritime & Logistics – World Maritime University (Malmö)",
+    languages: ["Français (natif)", "Anglais (C2)", "Peul (natif)", "Portugais (B1)"],
     received: "2026-04-29",
-    matchCriteria: { experience: 92, competences: 90, secteur: 85, formation: 95, localisation: 100 },
-    excerpt: "9 ans en direction commerciale dans les services aux entreprises. Expérience confirmée sur la gestion de portefeuilles grands comptes en Afrique et Europe.",
+    matchCriteria: { experience: 95, competences: 92, secteur: 90, formation: 95, localisation: 100 },
+    excerpt: "10 ans en direction des opérations logistiques portuaires. Ex-Directeur adjoint du terminal à conteneurs de Cotonou. Double expertise maritime et terrestre.",
     responded: false,
   },
   {
-    id: 8, name: "Moussa Diallo", initials: "MD", color: "#2c7a4b",
+    id: 8, name: "Mariama Baldé", initials: "MB", color: "#2c7a4b",
     score: 76, status: "Pertinent",
-    source: "Educarrière", sourceType: "jb",
-    title: "Responsable Commercial Afrique de l'Ouest", experience: 7,
-    location: "Abidjan / Paris", email: "m.diallo@email.fr",
-    skills: ["Développement commercial", "Appels d'offres", "Logistique", "B2B", "Négociation"],
-    education: "Master Commerce International – Université de Cocody",
-    languages: ["Français (natif)", "Anglais (B2)", "Wolof (natif)"],
-    received: "2026-04-29",
-    matchCriteria: { experience: 78, competences: 80, secteur: 90, formation: 72, localisation: 70 },
-    excerpt: "7 ans d'expérience en développement commercial en Afrique de l'Ouest, secteur logistique et transport. Connaissance approfondie des marchés subsahariens.",
+    source: "Novojob", sourceType: "jb",
+    title: "Responsable exploitation fluviale", experience: 6,
+    location: "Kinshasa, RDC", email: "m.balde@email.cd",
+    skills: ["Exploitation fluviale", "Transport multimodal", "Gestion d'escale", "Réglementation CEMAC", "Planification"],
+    education: "Master Gestion des Transports – Université de Kinshasa",
+    languages: ["Français (natif)", "Lingala (natif)", "Anglais (B2)", "Swahili (B1)"],
+    received: "2026-04-28",
+    matchCriteria: { experience: 75, competences: 78, secteur: 82, formation: 72, localisation: 55 },
+    excerpt: "6 ans en exploitation fluviale et multimodale sur le fleuve Congo. Expérience de coordination des opérations entre Kinshasa et Matadi.",
     responded: false,
   },
   {
-    id: 9, name: "Céline Morin", initials: "CM", color: "#a0522d",
-    score: 69, status: "À évaluer",
+    id: 9, name: "Ibrahim Koné", initials: "IK", color: "#a0522d",
+    score: 71, status: "À évaluer",
     source: "Site carrière", sourceType: "sc",
-    title: "Chargée d'affaires B2B", experience: 5,
-    location: "Lyon", email: "c.morin@email.fr",
-    skills: ["Gestion clients", "Prospection", "CRM HubSpot", "Reporting", "Secteur BtoB"],
-    education: "Licence AES – Université Lyon III",
-    languages: ["Français (natif)", "Anglais (B1)"],
-    received: "2026-04-28",
-    matchCriteria: { experience: 65, competences: 70, secteur: 60, formation: 65, localisation: 55 },
-    excerpt: "5 ans comme chargée d'affaires dans le secteur des services B2B en région Rhône-Alpes. Solide gestion de portefeuille clients PME.",
+    title: "Superviseur manutention portuaire", experience: 5,
+    location: "San Pedro, Côte d'Ivoire", email: "i.kone@email.ci",
+    skills: ["Manutention", "Gestion d'équipe terrain", "Sécurité portuaire", "Planification navire", "Grues & portiques"],
+    education: "Licence Pro Logistique Portuaire – INP-HB Yamoussoukro",
+    languages: ["Français (natif)", "Anglais (B1)", "Bété (natif)"],
+    received: "2026-04-27",
+    matchCriteria: { experience: 65, competences: 72, secteur: 78, formation: 68, localisation: 80 },
+    excerpt: "5 ans comme superviseur de manutention au Port de San Pedro. Gestion d'équipes de 15 dockers. Certifié sécurité portuaire ISPS.",
     responded: false,
   },
 ];
@@ -597,7 +597,7 @@ L'équipe Recrutement AGL`,
 
 function SourceBadge({ type }) {
   if (type === 'li') return <span className="li-badge">LinkedIn</span>;
-  if (type === 'jb') return <span className="jb-badge">Indeed</span>;
+  if (type === 'jb') return <span className="jb-badge">Novojob</span>;
   return <span className="sc-badge">Site AGL</span>;
 }
 
@@ -819,8 +819,8 @@ function SourceDonut() {
       new Chart(ctx, {
         type: 'doughnut',
         data: {
-          labels: ['LinkedIn', 'Site AGL', 'Indeed', 'Educarrière'],
-          datasets: [{ data: [24, 13, 7, 3], backgroundColor: ['#0A66C2','#143C64','#e8401c','#2c7a4b'], borderWidth: 0, hoverOffset: 8 }]
+          labels: ['LinkedIn', 'Site AGL', 'Novojob', 'Educarrière', 'Emploi.ci'],
+          datasets: [{ data: [18, 10, 9, 6, 4], backgroundColor: ['#0A66C2','#143C64','#E85D26','#2c7a4b','#2E86AB'], borderWidth: 0, hoverOffset: 8 }]
         },
         options: {
           responsive: true, maintainAspectRatio: false, cutout: '70%',
@@ -833,7 +833,7 @@ function SourceDonut() {
                 strokeStyle: 'transparent', pointStyle: 'circle', index: i
               }));
             }}},
-            tooltip: { callbacks: { label: ctx => ` ${ctx.parsed} CV (${Math.round(ctx.parsed/47*100)}%)` } }
+            tooltip: { callbacks: { label: ctx => { const total = ctx.dataset.data.reduce((a,b)=>a+b,0); return ` ${ctx.parsed} CV (${Math.round(ctx.parsed/total*100)}%)`; } } }
           },
           animation: { animateRotate: true, duration: 1000 }
         },
@@ -900,22 +900,20 @@ function ScoreRadar() {
 
 function PipelineBar() {
   const stages = [
-    { label: 'Reçus', value: 47, color: '#8CA0B4' },
-    { label: 'Analysés', value: 47, color: '#64788C' },
-    { label: 'Scorés', value: 47, color: '#143C64' },
-    { label: 'Shortlist', value: 8, color: '#F0B450' },
-    { label: 'Entretien', value: 4, color: '#F0DC8C' },
-    { label: 'Offre', value: 1, color: '#1a7a42' },
+    { label: 'Candidatures', value: 47, color: '#143C64' },
+    { label: 'Présélection', value: 8, color: '#F0B450' },
+    { label: 'Entretien', value: 4, color: '#64788C' },
+    { label: 'Embauche', value: 1, color: '#1a7a42' },
   ];
   const max = 47;
   return (
-    <div style={{display:'flex',flexDirection:'column',gap:10,padding:'4px 0'}}>
+    <div style={{display:'flex',flexDirection:'column',gap:14,padding:'4px 0'}}>
       {stages.map((s, i) => (
         <div key={s.label} style={{display:'flex',alignItems:'center',gap:12}}>
-          <div style={{width:72,fontSize:12,fontWeight:700,color:'var(--c-gray)',textAlign:'right',flexShrink:0}}>{s.label}</div>
-          <div style={{flex:1,height:28,background:'var(--c-cream)',borderRadius:6,overflow:'hidden',position:'relative'}}>
+          <div style={{width:82,fontSize:12,fontWeight:700,color:'var(--c-gray)',textAlign:'right',flexShrink:0}}>{s.label}</div>
+          <div style={{flex:1,height:30,background:'var(--c-cream)',borderRadius:6,overflow:'hidden',position:'relative'}}>
             <div style={{height:'100%',background:s.color,borderRadius:6,width:`${(s.value/max)*100}%`,transition:'width 1s ease',display:'flex',alignItems:'center',paddingLeft:10}}>
-              <span style={{color: i < 2 ? 'white' : (i === 5 ? 'white' : '#143C64'), fontWeight:800,fontSize:13}}>{s.value}</span>
+              <span style={{color: i === 0 || i === 3 ? 'white' : '#143C64', fontWeight:800,fontSize:13}}>{s.value}</span>
             </div>
           </div>
           <div style={{width:36,fontSize:11,color:'var(--c-gray)',flexShrink:0,textAlign:'right'}}>{Math.round(s.value/max*100)}%</div>
@@ -930,10 +928,10 @@ function Dashboard({ onNavigate }) {
   useEffect(() => { const t = setTimeout(() => setTick(1), 200); return () => clearTimeout(t); }, []);
 
   const KPI = [
-    { label: 'Candidatures', value: 47, delta: '+12 vs sem. préc.', up: true, color: '#143C64', sparkData: [28,31,30,33,35,37,42,47], icon: '📥' },
-    { label: 'Taux d\'analyse', value: '100%', delta: 'Traitement IA complet', up: true, color: '#1a7a42', sparkData: [72,80,85,88,92,95,98,100], icon: '🤖' },
-    { label: 'Score moyen', value: 71, delta: '+4 pts ce mois', up: true, color: '#F0B450', sparkData: [60,62,65,64,67,68,70,71], icon: '⭐' },
-    { label: 'Shortlist', value: 8, delta: '17% des candidats', up: false, color: '#64788C', sparkData: [2,3,3,5,5,6,7,8], icon: '🎯' },
+    { label: 'Candidatures', value: 47, delta: '+12 vs sem. préc.', up: true, color: '#143C64', sparkData: [28,31,30,33,35,37,42,47], icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#143C64" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> },
+    { label: 'Délai de recrutement', value: '18j', delta: '-4j vs mois préc.', up: true, color: '#1a7a42', sparkData: [28,26,24,23,22,21,19,18], icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1a7a42" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> },
+    { label: 'Taux transformation', value: '34%', delta: 'LinkedIn : 42% · Novojob : 28%', up: true, color: '#F0B450', sparkData: [22,24,26,28,29,31,33,34], icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F0B450" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> },
+    { label: 'Présélection', value: 8, delta: '5 pays · 3 métiers', up: false, color: '#64788C', sparkData: [2,3,3,5,5,6,7,8], icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64788C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg> },
   ];
 
   return (
@@ -995,7 +993,7 @@ function Dashboard({ onNavigate }) {
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:4}}>
             <div style={{fontWeight:800,fontSize:14,color:'#000'}}>Entonnoir de recrutement</div>
           </div>
-          <div style={{fontSize:12,color:'#787878',marginBottom:16}}>De la réception à l'offre</div>
+          <div style={{fontSize:12,color:'#787878',marginBottom:16}}>De la candidature à l'embauche</div>
           <PipelineBar />
         </div>
       </div>
@@ -1004,12 +1002,12 @@ function Dashboard({ onNavigate }) {
       <div style={{background:'white',borderRadius:12,padding:'20px',boxShadow:'0 1px 4px rgba(0,0,0,0.06)',border:'1px solid #eee'}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
           <div>
-            <div style={{fontWeight:800,fontSize:14,color:'#000'}}>Top candidats · Shortlist</div>
+            <div style={{fontWeight:800,fontSize:14,color:'#000'}}>Top candidats · Présélection</div>
             <div style={{fontSize:12,color:'#787878',marginTop:2}}>Profils avec score ≥ 80</div>
           </div>
           <button className="btn btn-outline btn-sm" onClick={() => onNavigate('candidates')}>Voir tous →</button>
         </div>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12}}>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:12}}>
           {CANDIDATES.filter(c => c.score >= 80).map((c,i) => (
             <div key={c.id} onClick={() => onNavigate('candidates')} style={{border:'1.5px solid var(--c-silver)',borderRadius:10,padding:'14px',cursor:'pointer',transition:'all 0.15s',position:'relative',overflow:'hidden'}}
               onMouseEnter={e => { e.currentTarget.style.borderColor='var(--c-navy)'; e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow='0 4px 16px rgba(0,0,0,0.08)'; }}
@@ -1053,7 +1051,7 @@ function CandidatesPage({ candidates, tweaks, addToPool, talentPool, activeOffer
     { id: 'top', label: 'Top profils' },
     { id: 'li', label: 'LinkedIn' },
     { id: 'sc', label: 'Site carrière' },
-    { id: 'jb', label: 'Indeed' },
+    { id: 'jb', label: 'Novojob' },
   ];
 
   const [page, setPage] = useState(1);
@@ -1172,6 +1170,10 @@ function CandidatesPage({ candidates, tweaks, addToPool, talentPool, activeOffer
 
           <div className="detail-section">
             <div className="detail-section-title">Matching par critère</div>
+            <div style={{fontSize:10.5,color:'var(--c-navy)',background:'rgba(20,60,100,0.06)',borderRadius:5,padding:'6px 10px',marginBottom:8,display:'flex',alignItems:'center',gap:6,border:'1px solid rgba(20,60,100,0.12)'}}>
+              <span>🛡</span>
+              <span>Aide à la décision — supervision humaine requise</span>
+            </div>
             <div style={{display:'flex',flexDirection:'column',gap:8}}>
               {Object.entries(selected.matchCriteria).map(([k,v]) => {
                 const labels = {experience:'Expérience',competences:'Compétences',secteur:'Secteur',formation:'Formation',localisation:'Localisation'};
@@ -1324,26 +1326,26 @@ function ResponseModal({ cand, onClose, onSend }) {
 
 function IngestionPage({ onNavigate, onCandidateImported }) {
   const OFFERS = [
-    { id: 1, title: 'Responsable Développement Commercial', location: 'Paris · CDI · 5–8 ans' },
-    { id: 2, title: "Chargé(e) d'affaires Île-de-France", location: 'Paris · CDI · 3–5 ans' },
-    { id: 3, title: 'Ingénieur Commercial Grands Comptes', location: 'Lyon · CDI · 4–6 ans' },
+    { id: 1, title: "Chef d'exploitation Terminal à Conteneurs", location: 'Abidjan · CDI · 5–8 ans' },
+    { id: 2, title: 'Responsable Transit & Douane', location: 'Lomé · CDI · 4–6 ans' },
+    { id: 3, title: 'Coordinateur Supply Chain Corridor', location: 'Douala · CDI · 3–5 ans' },
   ];
 
   const PROFILES = {
-    pdf: { name:'Marie Dupont', initials:'MD', color:'#5a3e8c', title:'Responsable Commercial B2B', experience:6, location:'Paris 15e', email:'m.dupont@email.fr', sourceType:'sc', score:82,
-      fields:[['Nom complet','Marie Dupont'],['Email','m.dupont@email.fr'],['Téléphone','+33 6 12 34 56 78'],['Poste actuel','Responsable Commercial B2B'],['Expérience','6 ans'],['Formation','Master Commerce – ESSEC'],['Localisation','Paris 15e']],
-      skills:['Développement commercial','CRM','Management',"Appels d'offres",'B2B'], languages:["Français (natif)","Anglais (B2)"], education:"Master Commerce – ESSEC",
-      matchCriteria:{experience:90,competences:88,secteur:82,formation:90,localisation:100}, excerpt:"6 ans d'expérience en développement commercial B2B. Ancienne Responsable chez Engie Services.",
+    pdf: { name:'Aïssatou Diallo', initials:'AD', color:'#5a3e8c', title:'Chef d\'exploitation portuaire', experience:7, location:'Abidjan, Côte d\'Ivoire', email:'a.diallo@email.ci', sourceType:'sc', score:85,
+      fields:[['Nom complet','Aïssatou Diallo'],['Email','a.diallo@email.ci'],['Téléphone','+225 07 12 34 56'],['Poste actuel','Chef d\'exploitation portuaire'],['Expérience','7 ans'],['Formation','Master Logistique Maritime – ISTL Abidjan'],['Localisation','Abidjan, Côte d\'Ivoire']],
+      skills:['Exploitation portuaire','Gestion de terminal','Supply chain','Management','Normes ISPS'], languages:["Français (natif)","Anglais (B2)","Peul (natif)"], education:"Master Logistique Maritime – ISTL Abidjan",
+      matchCriteria:{experience:85,competences:88,secteur:92,formation:82,localisation:100}, excerpt:"7 ans d'expérience en exploitation portuaire à Abidjan. Ancienne responsable des opérations conteneurs chez Bolloré Africa Logistics.",
     },
-    li: { name:'Jean-Baptiste Kone', initials:'JK', color:'#2c7a4b', title:'Business Developer Africa', experience:7, location:'Paris 8e', email:'jb.kone@email.fr', sourceType:'li', score:77,
-      fields:[['Nom complet','Jean-Baptiste Kone'],['Email','jb.kone@email.fr'],['Téléphone','+33 7 45 23 11 89'],['Poste actuel','Business Developer Africa'],['Expérience','7 ans'],['Formation','MBA – Grenoble EM'],['Localisation','Paris 8e']],
-      skills:['Business development','Négociation','CRM Salesforce','B2B','Afrique subsaharienne'], languages:["Français (natif)","Anglais (C1)","Dioula (natif)"], education:"MBA – Grenoble École de Management",
-      matchCriteria:{experience:80,competences:82,secteur:90,formation:75,localisation:95}, excerpt:"7 ans en business development en Afrique de l'Ouest. Expert des marchés émergents et logistique internationale.",
+    li: { name:'Yao Kouassi', initials:'YK', color:'#2c7a4b', title:'Responsable transit international', experience:6, location:'Lomé, Togo', email:'y.kouassi@email.tg', sourceType:'li', score:78,
+      fields:[['Nom complet','Yao Kouassi'],['Email','y.kouassi@email.tg'],['Téléphone','+228 90 45 23 11'],['Poste actuel','Responsable transit international'],['Expérience','6 ans'],['Formation','MBA Transport Maritime – Université de Lomé'],['Localisation','Lomé, Togo']],
+      skills:['Transit international','Réglementation douanière','Incoterms','Supply chain','SYDONIA'], languages:["Français (natif)","Anglais (C1)","Éwé (natif)"], education:"MBA Transport Maritime – Université de Lomé",
+      matchCriteria:{experience:78,competences:82,secteur:88,formation:75,localisation:85}, excerpt:"6 ans en transit international au Port Autonome de Lomé. Expert des procédures douanières UEMOA et CEDEAO.",
     },
-    jb: { name:'Aurélie Voss', initials:'AV', color:'#a06010', title:'Key Account Manager', experience:5, location:'Neuilly-sur-Seine', email:'a.voss@email.fr', sourceType:'jb', score:69,
-      fields:[['Nom complet','Aurélie Voss'],['Email','a.voss@email.fr'],['Téléphone','+33 6 88 44 21 37'],['Poste actuel','Key Account Manager'],['Expérience','5 ans'],['Formation','Bachelor Business – EBS Paris'],['Localisation','Neuilly-sur-Seine']],
-      skills:['Key Account Management','Grands comptes','CRM HubSpot','Reporting','Secteur services'], languages:["Français (natif)","Anglais (B1)"], education:"Bachelor Business – EBS Paris",
-      matchCriteria:{experience:65,competences:72,secteur:60,formation:68,localisation:88}, excerpt:"5 ans en gestion de comptes clés dans les services B2B. Bonne maîtrise des cycles de vente complexes.",
+    jb: { name:'Binta Sow', initials:'BS', color:'#a06010', title:'Coordinatrice logistique portuaire', experience:4, location:'Dakar, Sénégal', email:'b.sow@email.sn', sourceType:'jb', score:69,
+      fields:[['Nom complet','Binta Sow'],['Email','b.sow@email.sn'],['Téléphone','+221 77 888 44 21'],['Poste actuel','Coordinatrice logistique portuaire'],['Expérience','4 ans'],['Formation','Licence Transport & Logistique – IST Dakar'],['Localisation','Dakar, Sénégal']],
+      skills:['Coordination logistique','Gestion de stock','Documentation export','Transport multimodal','SAP'], languages:["Français (natif)","Anglais (B1)","Wolof (natif)"], education:"Licence Transport & Logistique – IST Dakar",
+      matchCriteria:{experience:58,competences:72,secteur:75,formation:65,localisation:72}, excerpt:"4 ans en coordination logistique au Port Autonome de Dakar. Bonne maîtrise des flux conteneurs et de la documentation maritime.",
     },
   };
 
@@ -1609,7 +1611,7 @@ function IngestionPage({ onNavigate, onCandidateImported }) {
                   </div>
                 </div>
                 <div style={{fontSize:12,color:scoreColor,fontWeight:600}}>
-                  {profile.score>=80?'→ Ajouté à la shortlist automatiquement':profile.score>=65?'→ Profil pertinent, à examiner':'→ Profil enregistré, non retenu automatiquement'}
+                  {profile.score>=80?'→ Ajouté à la Présélection automatiquement':profile.score>=65?'→ Profil pertinent, à examiner':'→ Profil enregistré, non retenu automatiquement'}
                 </div>
               </div>
             )}
@@ -1636,6 +1638,9 @@ function IntegrationsPage() {
     linkedin: 'connected',
     site: 'idle',
     educarriere: 'idle',
+    novojob: 'idle',
+    emploici: 'idle',
+    talents2africa: 'idle',
   });
 
   const connect = (id) => {
@@ -1654,8 +1659,8 @@ function IntegrationsPage() {
       method: 'API OAuth 2.0',
       volume: '24 CV / semaine (moy.)',
       flux: [
-        { label: 'Responsable Développement Commercial', count: 24, sync: 'il y a 12 min' },
-        { label: 'Chargé(e) d\'affaires Île-de-France', count: 11, sync: 'il y a 1h' },
+        { label: 'Chef d\'exploitation Terminal – Abidjan', count: 24, sync: 'il y a 12 min' },
+        { label: 'Responsable Transit & Douane – Lomé', count: 11, sync: 'il y a 1h' },
       ],
       steps: [
         { title: 'Connexion OAuth LinkedIn', desc: 'Authentification sécurisée via l\'API Talent Solutions.' },
@@ -1683,9 +1688,9 @@ function IntegrationsPage() {
     {
       id: 'educarriere',
       name: 'Educarrière',
-      category: 'Job board Afrique',
+      category: 'Job board Côte d\'Ivoire',
       logo: <div style={{width:44,height:44,borderRadius:8,background:'white',border:'1px solid #eee',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,padding:3}}><img src="uploads/logo.png" alt="Educarrière" style={{width:'100%',objectFit:'contain'}} /></div>,
-      desc: 'Portail d\'emploi panafricain (educarriere.ci). Import des candidatures via export CSV ou API.',
+      desc: 'Portail d\'emploi leader en Côte d\'Ivoire (educarriere.ci). Import des candidatures via export CSV ou API.',
       method: 'Export CSV / Email',
       volume: '—',
       url: 'https://www.educarriere.ci/',
@@ -1695,6 +1700,54 @@ function IntegrationsPage() {
         { title: 'Import dans RecrutIA', desc: 'Glissez le fichier CSV dans l\'interface d\'import pour traitement en masse.' },
         { title: 'Mapping des colonnes', desc: 'RecrutIA détecte automatiquement les champs (nom, email, CV, poste…).' },
         { title: 'Analyse et scoring', desc: 'Chaque profil est analysé et scoré vis-à-vis de l\'offre cible.' },
+      ],
+    },
+    {
+      id: 'novojob',
+      name: 'Novojob',
+      category: 'Job board panafricain',
+      logo: <div style={{width:44,height:44,borderRadius:8,background:'white',border:'1px solid #eee',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,padding:3}}><img src="uploads/novojob.png" alt="Novojob" style={{width:'100%',objectFit:'contain'}} /></div>,
+      desc: 'Plateforme d\'emploi panafricaine présente dans 15+ pays (Sénégal, Cameroun, Togo, RDC…). Import via API ou CSV.',
+      method: 'API REST / CSV',
+      volume: '—',
+      flux: [],
+      steps: [
+        { title: 'Connexion API Novojob', desc: 'Authentification via clé API depuis votre espace employeur Novojob.' },
+        { title: 'Synchronisation des offres', desc: 'Vos offres AGL sont publiées automatiquement sur Novojob.' }, 
+        { title: 'Collecte des candidatures', desc: 'Chaque candidature est récupérée en temps réel via webhook.' },
+        { title: 'Parsing & scoring', desc: 'Le CV est analysé et scoré automatiquement par RecrutIA.' },
+      ],
+    },
+    {
+      id: 'emploici',
+      name: 'Emploi.ci',
+      category: 'Job board Côte d\'Ivoire',
+      logo: <div style={{width:44,height:44,borderRadius:8,background:'white',border:'1px solid #eee',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,padding:3}}><img src="uploads/emploicic.png" alt="Emploi.ci" style={{width:'100%',objectFit:'contain'}} /></div>,
+      desc: 'Premier site d\'emploi en Côte d\'Ivoire. Candidatures récupérées via export ou transfert email automatique.',
+      method: 'Export CSV / Email',
+      volume: '—',
+      flux: [],
+      steps: [
+        { title: 'Export depuis Emploi.ci', desc: 'Téléchargez les candidatures depuis votre espace recruteur.' },
+        { title: 'Import dans RecrutIA', desc: 'Upload du fichier CSV pour traitement automatique.' },
+        { title: 'Détection des doublons', desc: 'RecrutIA identifie les candidats déjà présents dans votre base.' },
+        { title: 'Analyse et classement', desc: 'Scoring automatique et ajout au pipeline de recrutement.' },
+      ],
+    },
+    {
+      id: 'talents2africa',
+      name: 'Talents2Africa',
+      category: 'Recrutement Afrique',
+      logo: <div style={{width:44,height:44,borderRadius:8,background:'white',border:'1px solid #eee',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,padding:3}}><img src="uploads/talent.png" alt="Talents2Africa" style={{width:'100%',objectFit:'contain'}} /></div>,
+      desc: 'Plateforme spécialisée dans le recrutement de cadres et dirigeants africains. Profils qualifiés et diaspora.',
+      method: 'API / Partenariat',
+      volume: '—',
+      flux: [],
+      steps: [
+        { title: 'Partenariat Talents2Africa', desc: 'Activation du flux de candidatures via accord de partenariat.' },
+        { title: 'Publication des offres', desc: 'Vos offres sont diffusées sur le réseau Talents2Africa et diaspora.' },
+        { title: 'Réception des profils', desc: 'Les candidatures qualifiées sont transmises directement à RecrutIA.' },
+        { title: 'Scoring et Présélection', desc: 'Analyse automatique et intégration dans votre pipeline.' },
       ],
     },
   ];
@@ -1969,7 +2022,7 @@ function TalentPoolPage({ pool }) {
           <option value="all">Toutes sources</option>
           <option value="li">LinkedIn</option>
           <option value="sc">Site carrière</option>
-          <option value="jb">Indeed / Autre</option>
+          <option value="jb">Novojob / Emploi.ci</option>
         </select>
         <select value={filterScore} onChange={e=>setFilterScore(e.target.value)}
           style={{flex:'1 1 120px',minWidth:0,padding:'6px 8px',border:'1.5px solid var(--c-silver)',borderRadius:7,fontSize:12.5,fontFamily:'inherit',color:'var(--c-black)',background:'white',outline:'none',cursor:'pointer'}}>
@@ -2116,14 +2169,14 @@ function ResponsesPage() {
   };
 
   const HISTORY = [
-    { name:'Sophie Marchand', type:'Réponse positive', date:'29/04 08:42', sender:'mc.dupuis', ok:true },
-    { name:'Léa Fontaine', type:'Accusé de réception', date:'28/04 09:14', sender:'mc.dupuis', ok:true },
-    { name:'Amina Rousseau', type:'Accusé de réception', date:'25/04 11:03', sender:'système', ok:true },
-    { name:'Nicolas Petit', type:'Réponse négative', date:'25/04 11:03', sender:'système', ok:true },
-    { name:'Thomas Durand', type:'Accusé de réception', date:'26/04 14:22', sender:'r.martin', ok:true },
-    { name:'Karim Benali', type:'Accusé de réception', date:'27/04 10:55', sender:'système', ok:true },
-    { name:'Isabelle Garnier', type:'Réponse positive', date:'29/04 09:10', sender:'mc.dupuis', ok:true },
-    { name:'Moussa Diallo', type:'Accusé de réception', date:'29/04 09:12', sender:'système', ok:true },
+    { name:'Aya Konaté', type:'Réponse positive', date:'29/04 08:42', sender:'mc.dupuis', ok:true },
+    { name:'Jean-Marc Ebouélé', type:'Accusé de réception', date:'28/04 09:14', sender:'mc.dupuis', ok:true },
+    { name:'Aminata Touré', type:'Accusé de réception', date:'26/04 11:03', sender:'système', ok:true },
+    { name:'Patrick Mensah', type:'Réponse négative', date:'26/04 15:30', sender:'mc.dupuis', ok:true },
+    { name:'Moussa Camara', type:'Accusé de réception', date:'27/04 14:22', sender:'système', ok:true },
+    { name:'Fatou Diagne', type:'Accusé de réception', date:'28/04 10:55', sender:'système', ok:true },
+    { name:'Oumar Bah', type:'Réponse positive', date:'29/04 09:10', sender:'mc.dupuis', ok:true },
+    { name:'Mariama Baldé', type:'Accusé de réception', date:'29/04 09:12', sender:'système', ok:true },
   ];
 
   const visibleHistory = showAllHistory ? HISTORY : HISTORY.slice(0, 5);
@@ -2168,17 +2221,19 @@ function ResponsesPage() {
           <div className="card-title">Règles d'envoi automatique</div>
           <div style={{display:'flex',flexDirection:'column',gap:10}}>
             {[
-              { rule:'Score ≥ 80', action:'Réponse positive + invitation entretien', enabled:true },
               { rule:'Tout dépôt de candidature', action:'Accusé de réception immédiat', enabled:true },
-              { rule:'Score < 50', action:'Réponse négative (J+3)', enabled:false },
+              { rule:'Score ≥ 80', action:'Présélection + notification RH pour validation', enabled:true },
+              { rule:'Score < 50', action:'Réponse négative (validation manager requise)', enabled:false, warning:true },
+              { rule:'Supervision humaine', action:'Toute réponse négative nécessite une approbation manager', enabled:true, shield:true },
             ].map((r,i) => (
-              <div key={i} style={{display:'flex',alignItems:'center',gap:12,padding:'10px 12px',background:r.enabled ? 'rgba(26,122,66,0.06)' : 'var(--c-cream)',borderRadius:8,border:`1px solid ${r.enabled ? '#b8e8cc' : 'var(--c-silver)'}`}}>
+              <div key={i} style={{display:'flex',alignItems:'center',gap:12,padding:'10px 12px',background:r.shield ? 'rgba(20,60,100,0.06)' : r.enabled ? 'rgba(26,122,66,0.06)' : 'var(--c-cream)',borderRadius:8,border:`1px solid ${r.shield ? 'var(--c-navy)' : r.enabled ? '#b8e8cc' : 'var(--c-silver)'}`}}>
                 <div style={{flex:1}}>
-                  <div style={{fontWeight:700,fontSize:12.5,color:r.enabled ? '#1a7a42' : 'var(--c-gray)'}}>{r.rule}</div>
+                  <div style={{fontWeight:700,fontSize:12.5,color:r.shield ? 'var(--c-navy)' : r.enabled ? '#1a7a42' : 'var(--c-gray)'}}>{r.shield ? '🛡 ' : ''}{r.rule}</div>
                   <div style={{fontSize:11.5,color:'var(--c-gray)'}}>→ {r.action}</div>
+                  {r.warning && <div style={{fontSize:10.5,color:'#b03030',marginTop:3,fontStyle:'italic'}}>Aucune décision négative automatisée sans contrôle humain</div>}
                 </div>
-                <div style={{fontSize:11,fontWeight:700,color:r.enabled ? '#1a7a42' : 'var(--c-gray)'}}>
-                  {r.enabled ? '● ACTIF' : '○ INACTIF'}
+                <div style={{fontSize:11,fontWeight:700,color:r.shield ? 'var(--c-navy)' : r.enabled ? '#1a7a42' : 'var(--c-gray)'}}>
+                  {r.shield ? '🔒 OBLIGATOIRE' : r.enabled ? '● ACTIF' : '○ INACTIF'}
                 </div>
               </div>
             ))}
@@ -2237,28 +2292,28 @@ function ResponsesPage() {
 
 const OFFRES_DATA = [
   {
-    id: 1, title: 'Responsable Développement Commercial', location: 'Paris, France · Hybride',
-    contract: 'CDI', experience: '5–8 ans', sector: 'Énergie / Services',
+    id: 1, title: 'Chef d\'exploitation Terminal à Conteneurs', location: 'Abidjan, Côte d\'Ivoire · Présentiel',
+    contract: 'CDI', experience: '5–8 ans', sector: 'Logistique portuaire',
     status: 'active', published: ['li', 'sc'], candidates: 47, new: 12,
     created: '15/04/2026', deadline: '30/05/2026',
-    skills: ['Développement commercial', 'Management', 'CRM', 'Appels d\'offres B2B'],
-    description: 'Rattaché(e) à la Direction Commerciale, vous pilotez le développement du portefeuille clients sur la région Île-de-France.',
+    skills: ['Exploitation portuaire', 'Gestion de terminal', 'Supply chain', 'Management', 'ISPS'],
+    description: 'Vous pilotez l\'exploitation du parc à conteneurs et coordonnez les opérations de manutention au terminal d\'Abidjan.',
   },
   {
-    id: 2, title: 'Chargé(e) d\'affaires Île-de-France', location: 'Paris, France · Présentiel',
-    contract: 'CDI', experience: '3–5 ans', sector: 'Services B2B',
-    status: 'active', published: ['li', 'sc', 'edu'], candidates: 23, new: 5,
+    id: 2, title: 'Responsable Transit & Douane', location: 'Lomé, Togo · Présentiel',
+    contract: 'CDI', experience: '4–6 ans', sector: 'Transit / Douane',
+    status: 'active', published: ['li', 'sc', 'edu'], candidates: 31, new: 8,
     created: '20/04/2026', deadline: '15/05/2026',
-    skills: ['Prospection', 'Gestion clients', 'CRM', 'Reporting'],
-    description: 'Vous développez un portefeuille de clients PME/ETI sur la région parisienne et assurez le suivi commercial.',
+    skills: ['Transit international', 'Réglementation douanière', 'SYDONIA', 'Incoterms'],
+    description: 'Vous supervisez les opérations de transit et dédouanement au Port Autonome de Lomé pour l\'ensemble des flux import/export.',
   },
   {
-    id: 3, title: 'Ingénieur Commercial Grands Comptes', location: 'Abidjan, Côte d\'Ivoire · Hybride',
-    contract: 'CDI', experience: '4–6 ans', sector: 'Énergie / Logistique',
+    id: 3, title: 'Coordinateur Supply Chain Corridor', location: 'Douala, Cameroun · Hybride',
+    contract: 'CDI', experience: '3–5 ans', sector: 'Supply chain / Transport',
     status: 'draft', published: [], candidates: 0, new: 0,
     created: '28/04/2026', deadline: '31/05/2026',
-    skills: ['Grands comptes', 'Négociation B2B', 'Énergie', 'Afrique subsaharienne'],
-    description: 'Vous gérez et développez un portefeuille de clients grands comptes en Afrique de l\'Ouest, secteur énergie et logistique.',
+    skills: ['Supply chain', 'Transport multimodal', 'Planification', 'Gestion de corridor'],
+    description: 'Vous coordonnez les flux logistiques sur le corridor Douala-N\'Djamena, en lien avec les transporteurs, transitaires et autorités douanières.',
   },
 ];
 
@@ -2582,7 +2637,7 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "accentColor": "#fe9239",
   "sidebarDark": true,
   "showScores": true,
-  "jobTitle": "Responsable Développement Commercial"
+  "jobTitle": "Chef d'exploitation Terminal à Conteneurs"
 }/*EDITMODE-END*/;
 
 function App() {
@@ -2591,8 +2646,11 @@ function App() {
   const [page, setPage] = useState('dashboard');
   const [user, setUser] = useState(null);
   const [talentPool, setTalentPool] = useState([
-    { id:101, name:'Clara Vidal', initials:'CV', color:'#a06010', score:58, title:'Commerciale Terrain', experience:3, location:'Neuilly', skills:['Prospection','CRM'], sourceType:'jb' },
-    { id:102, name:'Hugo Martin', initials:'HM', color:'#2a5d8c', score:76, title:'Responsable Comptes Clés', experience:5, location:'Paris', skills:['Grands comptes','B2B'], sourceType:'li' },
+    { id:101, name:'Kofi Asante', initials:'KA', color:'#a06010', score:78, title:'Superviseur terminal à conteneurs', experience:6, location:'Tema, Ghana', skills:['Gestion portuaire','Grutage','SAP'], sourceType:'jb' },
+    { id:102, name:'Fatoumata Sy', initials:'FS', color:'#5a3e8c', score:74, title:'Coordinatrice transit maritime', experience:5, location:'Dakar, Sénégal', skills:['Transit','Douanes','OHADA'], sourceType:'li' },
+    { id:103, name:'Amadou Diop', initials:'AD', color:'#2a5d8c', score:81, title:'Chef d\'exploitation logistique', experience:8, location:'Abidjan, Côte d\'Ivoire', skills:['Supply chain','TMS','Management'], sourceType:'sc' },
+    { id:104, name:'Grace Okafor', initials:'GO', color:'#1a7a42', score:69, title:'Responsable dédouanement', experience:4, location:'Lagos, Nigeria', skills:['Customs','Import/Export','Freight'], sourceType:'li' },
+    { id:105, name:'Cheikh Ndiaye', initials:'CN', color:'#143C64', score:72, title:'Ingénieur logistique portuaire', experience:7, location:'Conakry, Guinée', skills:['Manutention','Planification','ISO 9001'], sourceType:'jb' },
   ]);
 
   const [candidates, setCandidates] = useState(CANDIDATES);
@@ -2628,7 +2686,7 @@ function App() {
         <div className="sidebar-job">
           <div className="job-label">Offre active</div>
           <div className="job-title">{tweaks.jobTitle}</div>
-          <div className="job-meta">Paris · CDI · 5–8 ans exp.</div>
+          <div className="job-meta">Abidjan · CDI · 5–8 ans exp.</div>
         </div>
       </aside>
 
